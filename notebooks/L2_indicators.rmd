@@ -1,0 +1,765 @@
+---
+title: 'Evaluating Innovation System Performance – From simple to complex indicators, and why it matters for policy and business (DSH)'
+author: "Daniel S. Hain (dsh@business.aau.dk)"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: true
+    number_sections: yes
+---
+
+```{r setup, include=FALSE}
+### Generic preamble
+Sys.setenv(LANG = "en") # System language = english
+options(scipen = 5) # Disable scientific exponent annotation of numbers
+set.seed(1337) # Set seed for reproducability
+rm(list=ls()); graphics.off() # get rid of everything in the workspace
+
+### Load packages  
+# Standard
+library(knitr) # For display of the markdown
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(magrittr) # For extra-piping operators (eg. %<>%)
+library(skimr) # Nice descriptives
+
+
+### Knitr options
+opts_chunk$set(warning=FALSE,
+               message=FALSE,
+               fig.align="center"
+               )
+```
+
+
+# Introduction
+
+xxxx
+xxxx
+xxxx
+
+# Exploring indicators: The OECD Science, Technology, and Innovation (STI) Outlook 
+
+## Exploring the database and downloading
+
+```{r}
+library(OECD) # OECD API package # devtools::install_github("expersso/OECD")
+```
+
+
+```{r}
+dataset_list <- get_datasets()
+search_dataset("science|technology|innovation", data = dataset_list) 
+```
+
+Well, let's pick one. As already hinted, we will work with the [Science, Technology, and Innovation (STI) Outlook](https://read.oecd-ilibrary.org/science-and-technology/oecd-science-technology-and-innovation-outlook-2018_sti_in_outlook-2018-en#page1) (`STIO_2016`), which is up to now unfortunatelly only available in the 2016 (newest is 2018) version of the dataset. It is a biennial review of key trends in science, technology and innovation (STI) policy in OECD countries and a number of major partner economies. 
+
+For adittional information on the variables and their construction, check the metadata. In case you would like to work with it seriously, you are very much adviced to do so.
+
+```{r}
+browse_metadata("STIO_2016")
+```
+
+With the `get_data_structure()` function of the package, we can inspect what we are going to find.
+
+```{r}
+dstruc <- get_data_structure("STIO_2016")
+str(dstruc, max.level = 1)
+```
+
+We see the output will be a `list` format. The `INDICATOR` dataframe here contains the description of the indicators. Letys take a look:
+
+```{r}
+dstruc$INDICATOR
+```
+
+You see it is pretty comprehensive and contains a variety of country level indicators related to STI activities and outcomes. For the sake of brevity and to prevent long download times, we will focus on a selection of indicators (not encessarily the best, just a quick selection of potentially relevant ones).
+
+```{r}
+vars <- c("GDP_PPPK", "GDP_HAB_PPPK", "GDP_GRO", "POP_NB", "G_XGDP", "BE_XGDP", "GV_XGDP", "RDPERS_EMP", "PTRIAD_GDP", "UNI500_HAB")
+```
+
+```{r}
+dstruc$INDICATOR %>%
+  filter(id %in% vars)
+```
+
+I here provide you a selection of different types iof indicators, related to:
+
+* General population, size of the economy, and growth (`POP_NB, GDP_PPPK, GDP_GRO`)
+* Inputs: STI investments (`G_XGDP, BE_XGDP, GV_XGDP`)
+* Throughputs: R&D personal and top universities (`RDPERS_EMP, UNI500_HAB`)
+* Output: Patents (`PTRIAD_GDP`)
+
+Note that we only pick relative and not absolute indicators, which ease international comparison between countries of varying size.
+
+```{r}
+data <- get_dataset(dataset = "STIO_2016", filter = list (dstruc$COUNTRY$id, vars))
+data %>% head()
+```
+
+## Brief data munging
+
+Before we dive into the analysis, we need to do a bit of data cleaning and munginging. Here, I do the following:
+
+* Deselect variables we do not need
+* Dename some for convenience
+* CHange the format of `year` from `character` to `numeric`
+* Sort the data
+
+```{r}
+data %<>%
+  select(-TIME_FORMAT, -OBS_STATUS) %>%
+  rename(ctry.iso3 = COUNTRY,
+         indicator = INDICATOR,
+         year = obsTime,
+         value = obsValue) %>%
+  mutate(year = year %>% as.numeric()) %>%  
+  arrange(ctry.iso3, indicator, year) 
+  
+```
+
+The country here is coded in `iso3` format. Sometimes, we need to merge country level data from different sources which might be coded differently, and sometimes we might just want to have the full country name for convenience. Here, the `countrycode` package is handy, since it offers convenient functions to convert between different formats.
+
+```{r}
+library(countrycode) # For countrycode conversion
+data %<>% 
+  mutate(ctry.name = ctry.iso3 %>% countrycode("iso3c", "country.name")) 
+```
+
+We will later also do summaries ofer 5 year time frames. Therefore I here already define a variable `period`.
+
+```{r}
+data %<>% 
+  group_by(ctry.iso3, indicator) %>%
+  mutate(value = if_else(is.na(value), lag(value), value) ) %>%
+  ungroup() %>%
+  mutate(period = case_when(year <= 2005 ~ 1,
+                            year > 2005 & year <= 2010 ~ 2,
+                            year > 2010 ~ 3)) %>%
+  select(ctry.iso3, ctry.name, year, period, everything()) 
+
+data  %>% head()
+```
+
+We also see that the data has a `long` (also called `tidy`) format, meaning the variables to be found in the rows rather than the columns, where the variable name is to be found in the `indicator` column. This is a typical data structure you will often obtain from statistical offices, the OECD, the Worldbank and so forth. This is sometimes really convenient for plotting and providing summaries of many variables. For other tasks, however, we require a `wide` format, where the variables are to be found on the columns. We will use the `spread()` funcction to do so.
+
+```{r}
+data.wide <- data %>%
+  spread(key = indicator, value = value)
+
+data.wide %>% head()
+```
+
+## First inspection
+
+Now that the data has the right shape, lets inspect it a bit. My favorite high-level summary function here is `skim()` from the `skimr`package.
+ 
+```{r}
+library(skimr)
+data.wide %>% skim()
+```
+
+Now it is time for some first visualization. We will soon do some own ones with the `ggplot2` package. Here for now use the `GGally` packages, which builds on `ggplot2` and offers some nice standard exploratory visualizations. 
+
+```{r}
+library(ggplot2)
+library(GGally) # ggplot visualization addons
+```
+
+First, lets look at the correlation matrix.
+
+```{r,fig.width=10,fig.height=10,fig.align='center'}
+data.wide %>% 
+  select(-ctry.iso3, -ctry.name, -year, -period) %>%
+  ggcorr(label = TRUE, label_size = 3, label_round = 2, label_alpha = TRUE)
+```
+
+In adittion, I like the comprehensive `ggpairs` function, which produces a combination of correlation and scatterplot matrix, plus 
+
+
+```{r,fig.width=12.5,fig.height=12.5,fig.align='center'}
+data.wide %>% 
+  select(-ctry.iso3, -ctry.name, -year, -period) %>%
+  ggpairs(aes(alpha = 0.3), 
+          ggtheme = theme_gray())
+```
+
+
+## Static rankings
+So, after getting an overview on the general indicator behavior, lets see how the different countries do. The most simple thing is just to see a barplot stile ranking of countries. Since the dataset spands the 2000-2016 period. we start with getting an overall overview over the whole time, and look at the mean on country level over the whole time.
+
+```{r}
+data.wide.agg <- data.wide %>%
+  select(-ctry.name, -year, -period) %>%
+  filter( !(ctry.iso3 %in% c("OECD", "EU28"))) %>%
+  group_by(ctry.iso3) %>% 
+  summarize_all(mean, na.rm = TRUE) %>% 
+  ungroup()  
+```
+
+First, lets take a look at a classical economic indicator, GDP growth.
+
+```{r}
+data.wide.agg %>%
+  arrange(desc(GDP_GRO)) %>%
+  slice(1:20) %>%
+  ggplot(aes(x = reorder(ctry.iso3, GDP_GRO), y = GDP_GRO)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+Next, lets look at some input, such as GERD.
+
+```{r}
+data.wide.agg %>%
+  arrange(desc(G_XGDP)) %>%
+  slice(1:20) %>%
+  ggplot(aes(x = reorder(ctry.iso3, G_XGDP), y = G_XGDP)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+Finally, also look at an output, such as triadic patents.
+
+```{r}
+data.wide.agg %>%
+  arrange(desc(PTRIAD_GDP)) %>%
+  slice(1:20) %>%
+  ggplot(aes(x = reorder(ctry.iso3, PTRIAD_GDP), y = PTRIAD_GDP)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+
+## Comparisons between countries, and relationships between indicators
+
+Next, it is often helpful to see how two indicators tend to develop together, and how countries scopre on them jointly. It for example makes sense to investigate to which extend some inputs (eg. GERD) translate into outputs (eg. patent applications). I also plot a regression line with `geom_smooth(method = "lm")`.
+
+```{r,fig.width=10,fig.height=10,fig.align='center'}
+data.wide.agg %>%
+  ggplot(aes(x =  G_XGDP, y = PTRIAD_GDP, size = GDP_PPPK, colour = GDP_GRO)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = "black") + 
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", alpha = 0.75) +
+  theme(legend.position = "bottom") +
+  labs(x = "GERD as % of GDP", 
+       y = "Triadic Patents per mil. GDP")
+```
+
+There indeed seems to be a relationship. Yet, some countries appear to translate their inputs more efficiently into output. Lets plot GERT and patent applications against each others.
+
+
+```{r,fig.width=10,fig.height=10,fig.align='center'}
+data.wide.agg %>%
+  ggplot(aes(x =  G_XGDP, y = GDP_GRO, size = GDP_PPPK)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = "black") + 
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", alpha = 0.75) +
+  theme(legend.position = "bottom") +
+  labs(x = "GERD as % of GDP", 
+       y = "GDP growth %")
+```
+
+There seems to be none, or even a negative relationship. 
+
+Discuss: IDeas why?
+
+## Trends and dynamics
+
+Up to now, we only looked at average stats over the whole 2000-2016 period. Now, lets have a look what changed over time. To look at changes in all countries will probably be somewhat confusing visual, so we here only look at a selection.
+
+```{r}
+ctry <- c("DNK", "DEU", "CHN", "JPN", "KOR", "GBR", "USA")
+```
+
+We again start with GERD.
+
+```{r,fig.width=7.5,fig.height=7.5,fig.align='center'}
+data.wide %>%
+  filter(year <= 2014 & ctry.iso3 %in% ctry) %>%
+  ggplot(aes(x = year, y = G_XGDP, color = ctry.iso3)) +
+  geom_line(size = 1)
+```
+
+We can also look at a set of indicators jointly. Here, the data in long format becomes handy, since we can just do a `facet_wrap()`, which will generate an own plot for every indicator. Since they all have different scales, we also set `scales = "free"`
+
+
+```{r,fig.width=12.5,fig.height=12.5,fig.align='center'}
+data %>%
+  filter(year <= 2014 & ctry.iso3 %in% ctry) %>%
+  ggplot(aes(x = year, y = value, color = ctry.iso3)) +
+  geom_line(size = 1) + 
+  facet_wrap(~ indicator, scales = "free") + 
+  theme(legend.position = "bottom")
+```
+
+
+## Catching up and development
+
+Finally, lets have a look at the development of countries along that indicators. This can be done similar to [Fagerberg & Srholec (2008). National innovation systems, capabilities and economic development. Research policy, 37(9), 1417-1435](https://www.sciencedirect.com/science/article/abs/pii/S0048733308001431) by comparing the initial level and the changes of indicators over time in a matrix.
+
+We will first create a new dataset, where we summarize all indicators for every 5 year period. That will make the results a bit more robust to tempral outliers and missing values for certain years.
+
+```{r}
+data.wide.period <- data.wide %>%
+  select(-ctry.name, -year) %>%
+  filter( !(ctry.iso3 %in% c("OECD", "EU28"))) %>%
+  group_by(ctry.iso3, period) %>% 
+  summarize_all(mean, na.rm = TRUE) %>% 
+  ungroup() %>%
+  arrange(ctry.iso3, period)
+```
+
+How, we generate the procentual differenence between the indicators in the first and last period, which we call `xxx_delta`. We only keep the obervations for period 1 then.
+
+```{r}
+data.wide.period %<>%
+  group_by(ctry.iso3) %>%
+  mutate(GDP_HAB_PPPK_delta =  (lead(GDP_HAB_PPPK, n = 2) - GDP_HAB_PPPK) / GDP_HAB_PPPK,
+         G_XGDP_delta =  (lead(G_XGDP, n = 2) - G_XGDP) / G_XGDP,
+         PTRIAD_GDP_delta = (lead(PTRIAD_GDP, n = 2) - PTRIAD_GDP) / PTRIAD_GDP) %>%
+  ungroup() %>%
+  filter(period == 1 & !(ctry.iso3 %in% c("PRT", "ITA", "GRC", "LUX"))) 
+```
+
+And now we can plot the initial value of the indicator against its chang over time, which gives us a good idea of the countries development.
+
+```{r}
+plot <- data.wide.period %>%
+  ggplot(aes(x =  GDP_HAB_PPPK, y = GDP_HAB_PPPK_delta, size = GDP_PPPK, color = G_XGDP_delta)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = "black")
+
+plot
+```
+
+Well, not that bad, but for our final exercise, we can do nicer. We will take this plot and make it a bit clearer, with a couple of simple measures.
+
+* Since the data has quite some outliers, we will plot it all on a log-scale (`scale_x_log10(), scale_y_log10()`)
+* We add proper titel, andaxis descriptions to make the the plot understandable.
+* We add horizontal and vertical lines at the median of the indicators.
+* We name the resulting quadrants a la Fagerberg & Srholec (2008).
+
+```{r,fig.width=12.5,fig.height=12.5,fig.align='center'}
+plot +
+  geom_hline(yintercept = median(data.wide.period$GDP_HAB_PPPK_delta, na.rm = TRUE), linetype = "dashed") +
+  geom_vline(xintercept = median(data.wide.period$GDP_HAB_PPPK, na.rm = TRUE), linetype = "dashed") +
+  annotate("text", x = 10000, y = 0.05, colour = "red", size = 5, label = "Falling behind") + 
+  annotate("text", x = 10000, y = 1.0, colour = "red", size = 5, label = "Catching up") + 
+  annotate("text", x = 45000, y = 0.05, colour = "red", size = 5, label = "Loosing momentum") + 
+  annotate("text", x = 45000, y = 1.0, colour = "red", size = 5, label = "Moving Ahead") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  theme(legend.position = "bottom") +
+  labs(title = "Economic development since 2000",
+       subtitle = "Inivial GDP vs. GDP growth",
+       x = "log. Initial GDP \n av. 2000-2005 compared with 2010-2015, constant USD ppp", 
+       y = "log. GDP Growth \n av. 2000-2005 compared with 2010-2015, constant USD ppp") 
+```
+
+
+## Geo-spatial visualization
+
+Lastly, lets do our first geo-spacial visualization, where we as an exercise plot a map with countries colored according to their BERD. Such map-visualizations often help understanding the geographical dimension of economic activity.
+
+```{r}
+data.map <- data.wide %>% 
+  select(-ctry.iso3, -year) %>%
+  group_by(ctry.name) %>%
+  summarize_all(mean, na.rm = TRUE) %>%
+  ungroup() 
+```
+
+First, we need a map. `ggplot`already provides with `map_data` a dataset with all the country coordinates. It can also produce country level maps in a similar way, but more on that later.
+
+We just amke two changes. We delete the Antarctica, since it takes a lot of space and is not that interesting in terms of economic activity. We also recode the country names of the USA and UK to full names. For whatever reasons they are abbreviated in `map_data`.
+
+```{r}
+map.world <- map_data("world") %>% 
+  filter(region != "Antarctica") %>%
+  mutate(region = region %>% recode(
+    USA = "United States",
+    UK = "United Kingdom"))
+
+map.world %>% head()
+```
+
+We now just join it with our OECD STI indicators.
+
+```{r}
+map.world %<>% 
+  left_join(data.map, by = c("region" = "ctry.name" )  )
+```
+
+And we can directly plot it. We therefore use the `geom_polygon()` layer. We also use a nicer color palett from the `viridis` package.
+
+
+```{r,fig.width=12.5,fig.height=7.5,fig.align='center'}
+library(viridis) # Nice color palettes
+map.world %>%
+  ggplot(aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = UNI500_HAB)) + 
+  scale_fill_viridis(option = 'plasma') + 
+  theme_bw()
+```
+
+Pretty, right?
+
+## Your turn
+
+[HERE](https://www.kaggle.com/danielhain/sdc-2019-s2-2-ex-1) you will find a notebook to give it an own try with the data.
+
+
+# Exploring indicators: The [Global Innovation Index](https://www.globalinnovationindex.org/Home)
+
+Now we will dive into another source of innovation related country level data, the [Global Innovation Index](https://www.globalinnovationindex.org/Home). It provides data on the innovation performance of 126 countries which represent 90.8% of the world’s population and 96.3% of global GDP. Its 80 indicators explore a broad vision of innovation, including political environment, education, infrastructure and business sophistication. 
+
+## Loading an inspecting
+
+Unfortunatelly, there exists no API where we can get this data right away. So, I downloaded it as CVS, and deleted some useless columns. Lets load it
+
+```{r}
+rm(list = ls())
+
+data <- read_csv("C:/Users/Admin/Dropbox/Public/media/ML_course_data/gi_index_2018.csv", na = "n/a") %>% as_tibble()
+data %>% head()
+```
+
+We can make a couple of observations: 
+
+* The data is in a mix between long and wide format, where the variables are to be found in the rows, but the countries are to be found in the columns
+* The Index is hirarchical, meaning that it consists of composite indicators on different levels.
+* The numberassociated to the countries is its ranking, meaning 1 refers to the highest scoring country, and 126 to the lowest.
+
+Lets first bring it in a seperate long and wide datastruckture again. We start with the long one, where we use the `gather()` function.
+
+```{r}
+data %<>%
+  gather(key = country, value = value, -index, -indicator)
+
+data %>% head()
+```
+
+We also slightly adjust the indicator string to get rid of symbols which are not appropriate to name variables in `R`. We als create an `index_level` variable, indicating the hirarchy of the corresponding indicator.
+
+```{r}
+data %<>%
+  mutate(indicator = indicator %>% str_to_lower() %>%  str_remove_all(",") %>% str_replace_all("[[:space:]\\/]", "\\.") %>% str_remove_all("\\(.*"),
+         index_level = index %>% str_remove_all("\\.") %>% nchar()) %>%
+  select(index_level, index, country, indicator, value) %>%
+  arrange(country, index)
+```
+
+Now, we again `spread()` the data to transform it into a wide format.
+
+```{r}
+data.wide <- data %>%
+  mutate(indicator = paste("L",index_level, "_", index, "_", indicator, sep = "")) %>%
+  select(-index_level, -index) %>%
+  spread(key = indicator, value = value) %>%
+  select(country, L1_0_global.innovation.index, everything())
+
+data.wide %>% head()
+```
+
+## First exploration and visualization
+
+Aggain, we first atke a look at a correlation plot.
+
+```{r,fig.width=10,fig.height=10,fig.align='center'}
+ggcorr(data.wide %>% select(starts_with("L1")), label = TRUE, label_size = 3, label_round = 2, label_alpha = TRUE)
+```
+
+And the `ggpairs()` matrix.
+
+```{r,fig.width=12.5,fig.height=12.5,fig.align='center'}
+ggpairs(data.wide %>% select(starts_with("L1")), 
+        aes(alpha = 0.3), 
+        ggtheme = theme_gray()) 
+```
+
+Question: You realize any difference to the same exercise we did with the OECD indicators?
+
+## Dimensionality reduction techniques
+
+### Introduction
+Dimensionality reduction techniques are foremost useful to (you might see it coming) reduce the dimensionality of our data. So, what does that mean? And why should we want to do that?
+
+Dimensions here is a synonym for variables, so what we want to really do is have less variables. To do that, we have to find ways to express the same amount of information with fewer, but more information rich variables. This is particularly useful to:
+
+* Find patterns in the **features** of the data
+* Visualization of **high-dimensional** data
+* **Pre-processing** before supervised learning
+
+### Overview over Techniques
+
+The type of analysis to be performed depends on the data set formats and structures. The most commonly used DR techniques are:
+
+* **Principal Component Analysis (PCA):** Is used to summarize the information contained in a continuous (i.e, quantitative) multivariate data by reducing the dimensionality of the data without loosing important information.
+* **Correspondence Analysis (CA):** An extension of the principal component analysis suited to analyse a large contingency table formed by two qualitative variables (or categorical data).
+* **Multiple Correspondence Analysis (MCA):** An adaptation of CA to a data table containing more than two categorical variables.
+* **Multiple Factor Analysis (MFA):** Dedicated to datasets where variables are organized into groups (qualitative and/or quantitative variables).
+* **Hierarchical Multiple Factor Analysis (HMFA):** An extension of MFA in a situation where the data are organized into a hierarchical structure.
+* **Factor Analysis of Mixed Data (FAMD):** A particular case of the MFA, dedicated to analyze a data set containing both quantitative and qualitative variables.
+
+### Principal Component Analysis (PCA)
+
+#### General
+
+* A popular method is principal component analysis (PCA)
+* Three goals when finding lower dimensional
+representation of features:
+     1. Find linear combination of variables to createprincipal components
+     2. Maintain most variance in the data
+     3. Principal components are uncorrelated (i.e.orthogonal to each other)
+
+#### The math and intuition behind it
+The mathematics underlying it are somewhat complex, so I won't go into too much detail, but the basics of PCA are as follows: you take a dataset with many variables, and you simplify that dataset by turning your original variables into a smaller number of "Principal Components".
+
+But what are these exactly? Principal Components are the underlying structure in the data. They are the directions where there is the most variance, the directions where the data is most spread out. This means that we try to find the straight line that best spreads the data out when it is projected along it. This is the first principal component, the straight line that shows the most substantial variance in the data.
+
+Where many variables correlate with one another, they will all contribute strongly to the same principal component. Each principal component sums up a certain percentage of the total variation in the dataset. Where your initial variables are strongly correlated with one another, you will be able to approximate most of the complexity in your dataset with just a few principal components. Usually, the first principal component captures the main similarity in your data, the second the main difference.
+
+These principal components can be computed via **Eigenvalues** and **Eigenvectors**. Just like many things in life, eigenvectors, and eigenvalues come in pairs: every eigenvector has a corresponding eigenvalue. Simply put, an eigenvector is a direction, such as "vertical" or "45 degrees", while an eigenvalue is a number telling you how much variance there is in the data in that direction. The eigenvector with the highest eigenvalue is, therefore, the first principal component. The number of eigenvalues and eigenvectors that exits is equal to the number of dimensions the data set has. Consequently, we can reframe a dataset in terms of these eigenvectors and eigenvalues without changing the underlying information. 
+
+Note that reframing a dataset regarding a set of eigenvalues and eigenvectors does not entail changing the data itself, you're just looking at it from a different angle, which should represent the data better.
+
+## Application of PCA on the GII
+
+To execute the PCA, we'll here use the [`FactoMineR`](http://factominer.free.fr/) package to compute PCA, and  [`factoextra`](https://github.com/kassambara/factoextra) for extracting and visualizing the results. `FactoMineR` is a great and my favorite package for computing principal component methods in R. It's very easy to use and very well documented. There are other alternatives around, but I since quite some time find it to be the most powerful and convenient one. `factoextra` is just a convenient `ggplot` wrapper that easily produces nice and informative diagnistic plots for a variety of DR and clustering techniques.
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+```
+
+One more thing to do: The visualizations of `factoextra` take the individual observation labels from th rownames. Rownames are an outdated concept which is depriciated in the `tibble`. Therefore we have to bring the data to the old `data.frame` format and declare rownames.
+
+```{r}
+data.pca <- data.wide %>% select(country, starts_with("L1"), -L1_0_global.innovation.index)
+data.pca<- as.data.frame(data.pca)
+rownames(data.pca) <- data.pca$country
+data.pca <- data.pca[,-1]
+```
+
+Alright, lets execute the PCA. Notice the `scale.unit = TRUE` argument, which you should ALWAYS use. Afterwards, we take a look at the resulting list object. It is a complicated nested list and not per se comfortable to work with.
+
+```{r}
+res.pca <- PCA(data.pca, scale.unit = TRUE, graph = FALSE, ncp = 5)
+str(res.pca, max.level = 2)
+```
+
+Ok, lets see look at the "screeplot", a diagnostic visualization that displays the variance explained by every component. We here use the `factoextra` package, like for all following visualizations with the `fviz_` prefix. Notice that the output in every case is an `ggplot2` object, which could be complemented with further layers.
+
+```{r}
+fviz_screeplot(res.pca, 
+               addlabels = TRUE, 
+               ncp = 10, 
+               ggtheme = theme_gray())
+```
+
+As expected, we see that the first component already captures a main share of the variance. Let's look at the corresponding eigenvalues.
+
+```{r}
+as_tibble(res.pca$eig)
+```
+
+For feature selection, our rule-of-thumb is to only include components with an eigenvalue > 1, meaning that we in this case would have reduced our data to only one dimension. The second already carries very little information.. Lets project them onto 2-dimensional space and take a look at the vector of our features.
+
+```{r,fig.width=10,fig.height=10,fig.align='center'}
+fviz_pca_var(res.pca, 
+             alpha.var = "cos2",
+             col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = FALSE,
+             ggtheme = theme_gray())
+```
+
+Lets look at the numeric values.
+
+```{r}
+get_pca_var(res.pca)
+as_tibble(res.pca$var$coord) %>%
+  mutate(variable = colnames(data.pca))
+```
+
+The results-object also contains the observations loading on the components.
+
+```{r}
+as_tibble(res.pca$ind$coord) %>%
+  mutate(vcountry = rownames(data.pca)) %>%
+  arrange(Dim.1) %>%
+  head()
+```
+
+```{r}
+as_tibble(res.pca$ind$coord) %>%
+  mutate(vcountry = rownames(data.pca)) %>%
+  arrange(desc(Dim.2)) %>%
+  head(10)
+```
+
+Let's visualize our countries in 2-dimensional space.
+
+```{r,fig.width=12.5,fig.height=12.5,fig.align='center'}
+fviz_pca_ind(res.pca, 
+             alpha.ind = "cos2",
+             col.ind = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             ggtheme = theme_gray()) 
+```
+
+## Clustering
+
+### Introduction
+
+The key operation in hierarchical agglomerative clustering is to repeatedly combine the two nearest clusters into a larger cluster. There are three key questions that need to be answered first:
+
+* How do you represent a cluster of more than one point?
+* How do you determine the "nearness" of clusters?
+* When do you stop combining clusters?
+* Hopefully by the end this tutorial you will be able to answer all of these questions. Before applying hierarchical clustering let's have a look at its working:
+
+1. It starts by calculating the distance between every pair of observation points and store it in a distance matrix.
+2. It then puts every point in its own cluster.
+3. Then it starts merging the closest pairs of points based on the distances from the distance matrix and as a result the amount of clusters goes down by 1.
+4. Then it recomputes the distance between the new cluster and the old ones and stores them in a new distance matrix.
+5. Lastly it repeats steps 2 and 3 until all the clusters are merged into one single cluster.
+
+There are several ways to measure the distance between clusters in order to decide the rules for clustering, and they are often called Linkage Methods. Some of the common linkage methods are:
+
+* **Complete-linkage:** calculates the maximum distance between clusters before merging.
+* **Single-linkage:** calculates the minimum distance between the clusters before merging. This linkage may be used to detect high values in your dataset which may be outliers as they will be merged at the end.
+* **Average-linkage:** calculates the average distance between clusters before merging.
+* **Centroid-linkage:** finds centroid of cluster 1 and centroid of cluster 2, and then calculates the distance between the two before merging (hint: usually not a good idea).
+
+The choice of linkage method entirely depends on you and there is no hard and fast method that will always give you good results. Different linkage methods lead to different clusters.
+
+Some further practical issues:
+
+* Data on different scales can cause undesirable resultsin clustering methods
+* Solution is to scale data so that features have same mean and standard deviation
+* Subtract mean of a feature from all observations, Divide each feature by the standard deviation ofthe feature
+* Normalized features have a mean of zero and a standard deviation of one
+
+### Hirarchical clustering based on PCA
+However, let's get it started and perform a cluster. We here use the `hcut` function, which includes most of the abovementioned mapproaches as options. We will use the `HCPC()` function, which directly takes PCA inputs. Otherwise, we would use the `hcut` function.
+
+```{r}
+hcpc <- HCPC(res.pca, 
+             nb.clust = -1,
+             graph = FALSE) 
+```
+
+In hierarchical clustering, you categorize the objects into a hierarchy similar to a tree-like diagram which is called a dendrogram. The distance of split or merge (called height) is shown on the y-axis of the dendrogram below.
+
+
+```{r,fig.width=12.5,fig.height=5,fig.align='center'}
+fviz_dend(hcpc, 
+          rect = TRUE, 
+          cex = 0.5)
+```
+
+And again visualize them:
+
+```{r,fig.width=12.5,fig.height=7.5,fig.align='center'}
+fviz_cluster(hcpc, data = data.pca,
+             ggtheme = theme_gray()) 
+```
+
+We can also project the dendogram on the 2 dimensional PCA space.
+
+```{r}
+plot(hcpc, choice = "3D.map")
+```
+
+We can now join the results back in our original dataset to use it in later analysis.
+
+```{r}
+data.pca.res <- data.wide %>%
+  mutate(cluster = hcpc$data.clust$clust %>% as.character(),
+         pca.1 = res.pca$ind$coord %>% as_tibble() %>% pull(Dim.1),
+         pca.2 = res.pca$ind$coord %>% as_tibble() %>% pull(Dim.2)) %>%
+  select(country, cluster, pca.1, pca.2, everything())
+```
+
+Lets summarize variable mean within clusters. 
+```{r}
+data.pca.res %>%
+  select(cluster, starts_with("L1")) %>%
+  group_by(cluster) %>%
+  mutate(n = n()) %>%
+  select(cluster, n, everything()) %>%
+  summarise_all(mean)
+```
+
+
+We can now also revisit our matrix plot from before. We will only now color the identified clusters differently to get a feeling for the distribution of the variables within clusters.
+
+```{r,,fig.width=12.5,fig.height=12.5,fig.align='center'}
+data.pca.res %>%
+  select(cluster, starts_with("L1")) %>%
+  ggpairs(lower = list(continuous = "smooth"), 
+        aes(colour = as.factor(cluster), alpha = 0.4),
+        progress = FALSE,
+        ggtheme = theme_gray() )
+```
+
+
+## Your turn
+
+[HERE](https://www.kaggle.com/danielhain/sdc-2019-s2-2-ex-2) you will find a notebook to give it an own try with the data.
+
+<!-- x <- psych::principal(data.pca %>% scale(), rotate = "varimax", nfactors = 5, scores = TRUE) -->
+
+<!-- res.pca.rot <- x$scores %>% as.data.frame() -->
+
+<!-- hc <- hcut(res.pca.rot, hc_func = "hclust", k = 4, stand = TRUE) -->
+
+<!-- fviz_cluster(hc, data = res.pca.rot, -->
+<!--              ggtheme = theme_gray())   -->
+
+
+<!-- data.pca %>% -->
+<!--   mutate(cluster = hc$cluster) %>% -->
+<!--   select(cluster, starts_with("L1")) %>% -->
+<!--   group_by(cluster) %>% -->
+<!--   mutate(n = n()) %>% -->
+<!--   select(cluster, n, everything()) %>% -->
+<!--   summarise_all(mean) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+

@@ -1,0 +1,541 @@
+---
+title: 'Lecture 3: The Spatial Dimension - Economic Geography and Regional System'
+author: "Daniel S. Hain (dsh@business.aau.dk)"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: true
+    number_sections: yes
+---
+
+```{r setup, include=FALSE}
+### Generic preamble
+Sys.setenv(LANG = "en") # System language = english
+options(scipen = 5) # Disable scientific exponent annotation of numbers
+set.seed(1337) # Set seed for reproducability
+rm(list=ls()); graphics.off() # get rid of everything in the workspace
+
+### Knitr options
+library(knitr) # For display of the markdown
+opts_chunk$set(warning=FALSE,
+               message=FALSE,
+               fig.align="center"
+               )
+```
+
+Loading some packages
+
+```{r}
+### Load packages  
+# Standard
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(magrittr) # For extra-piping operators (eg. %<>%)
+library(skimr) # Nice descriptives
+
+# Network specific
+library(tidygraph) # For tidy-style graph manipulation
+library(igraph)
+library(ggraph) # For ggplot2 style graph plotting
+```
+
+
+# A closer look at the  Chinese patenting activity
+
+## Loading and understanding the data structure
+So, let's start the fun. I for you extracted Chinese patents from our EPO [PATSTAT](https://www.epo.org/searching-for-patents/business/patstat.html) databases filed at either the EPO or the USTPO. I further provide you adittional data. Lets take a look:
+
+```{r}
+patents <- readRDS("../input/CN_patent.rds")
+inventors <- readRDS("../input/CN_inventor.rds") %>% filter(str_detect(city, "china")) %>% mutate(city = city %>% str_remove("\\,.*")) 
+el.pat_inv <- readRDS("../input/CN_el_inventor_patent.rds") 
+el.pat_tech <- readRDS("../input/CN_el_patent_field.rds")
+```
+
+```{r}
+patents %>% glimpse()
+```
+
+This main dataset contains all Patents in the 2000-2015 period with Chinese inventors, filed at the USTPO or EPO. I only included priority (earliest) patent applications which got granted up to now. We have the following variables:
+
+* `appln_id`: PATSTAT id, unique identifier of patent application
+* `appln_filing_year`: Filing year of first priority
+* `docdb_family_size`: Size of the (simple) patent family
+* `nb_citing_docdb_fam`: Number of citations recieved by the patent family
+* `nb_inventors`: Number of inventors
+
+```{r}
+patents %>% summary()
+```
+
+```{r}
+inventors %>% glimpse()
+```
+
+This are all Chinese inventors indicated on the selected patents. Foreign inventors are excluded. We enriched this data with an geocoding exercise. It up to now managed to match only around 75% of all inventors, new and better version in the making.
+
+* `person_id`: Unique inventor identifyer
+* `psn_name`: OECD HAN (harminized) inventor name
+* `city`: Inventors city, extracted with own adressparsing (not 100%)
+* `lon`: City longitude (own geocoding, not 100%)
+* `lat`: City lattitude (own geocoding, not 100%)
+
+```{r}
+inventors %>% summary()
+```
+
+```{r}
+el.pat_inv %>% glimpse()
+```
+ 
+Edgeliste, matching patents with inventors.
+
+```{r}
+el.pat_tech %>% glimpse()
+```
+
+Edgeliste, matching patent with technology field.
+
+Technology fields represent a higher level of aggregation compared to IPC classes, and classify technologies into 35 fields. Patents can be assigned to multiple fields simultaneously. Since the raw number is not very informative, lets get a field description.
+
+```{r}
+field_names <- read_csv("../input/ipc_technology.csv") %>%
+  select(field_nr, sector, field_name) %>%
+  distinct(field_nr, .keep_all = TRUE) %>%
+  mutate(field_nr = field_nr) %>%
+  arrange(field_nr)
+```
+
+```{r}
+field_names %>% distinct(field_name)
+```
+
+On a even higher level, these fields are classified in 5 sectors.
+
+```{r}
+field_names %>% distinct(sector)
+```
+
+## First investigation
+
+Alright, lets take a first look at the development of chinese patents over time.
+
+```{r,fig.width=12.5,fig.height=5}
+patents %>%
+  group_by(appln_filing_year) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = appln_filing_year, y = n)) +
+  geom_line()
+```
+
+Ok, we see that patent applications sharply increased over time... We see somewhat a decline after 2013, but I would suggest the reason to be a lag in reporting.
+
+Lets look at the sectoral split.
+
+```{r,fig.width=12.5,fig.height=5}
+patents.field <- patents %>%
+  left_join(el.pat_tech, by = "appln_id") %>%
+  left_join(field_names, by = c("techn_field_nr" = "field_nr")) 
+
+patents.field %>%
+  group_by(appln_filing_year, sector) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = appln_filing_year, y = n, col = sector)) +
+  geom_line()
+```
+
+It seems as if electrical engineering leads by far...
+
+# The Geography of Chinese patents
+
+## Data munging
+First, we will create a list of unique cities including their geolocation.
+
+```{r}
+cities.geo <- inventors %>%
+  distinct(city, .keep_all = TRUE) %>%
+  select(city, lon, lat)
+```
+
+Now, lets create a dataset of patents including their applicants and geolocation. To make it easier, we will only look at the first applicants in the `invt_seq_nr`, and discard the rest (alternatively, we could fractionalize them).
+
+```{r}
+reg.pat <- el.pat_inv %>%
+  arrange(appln_id, invt_seq_nr) %>%
+  distinct(appln_id, .keep_all = TRUE) %>%
+  left_join(inventors %>% select(person_id, city), by = "person_id") %>%
+  left_join(patents %>% select(appln_id, appln_filing_year, nb_citing_docdb_fam), by = "appln_id") %>%
+  select(-invt_seq_nr, person_id) 
+```
+
+## Top patenting cities
+Lets see which cities account for the most patents. Any guesses?
+
+```{r}
+top.cities <- reg.pat %>%
+  group_by(city) %>%
+  summarise(n = n(),
+            n.cit = sum(nb_citing_docdb_fam)) %>%
+  arrange(desc(n)) %>%
+  top_n(10, n)
+
+top.cities
+```
+
+## Activity over time
+Lets see how the cities developed over time.
+
+```{r,fig.width=12.5,fig.height=5}
+reg.pat %>%
+  group_by(city, appln_filing_year) %>%
+  summarise(n = n(),
+            n.cit = sum(nb_citing_docdb_fam)) %>%
+  arrange(desc(n)) %>%
+  filter(city %in% (top.cities %>% pull(city))) %>%
+  ggplot(aes(x = appln_filing_year, y = n, col = city)) +
+  geom_line()
+```
+
+## Geoplotting
+Lets see how that on aggregate looks on a map. Therefore, we first need some map-data for china. Usually I use the excellent `ggmap` package for that, but it uses a google back-end and needs a developer-id (problematic here in China). I figured out that Baidu has an almost equal package, but didnt figure out how to get an API key there in short time. Therefore, we will use some simple offline map data.
+
+```{r}
+library(mapdata) # with china map
+map <- borders(database = "world", regions = "China") 
+```
+
+There we go, that's how it looks.
+
+```{r}
+ggplot() + 
+  map
+```
+
+Now, we just need to plot the cities in, scaled by patenting activity.
+
+```{r}
+reg.pat.agg <- reg.pat %>%
+  group_by(city) %>%
+  summarise(n = n(),
+            n.cit = sum(nb_citing_docdb_fam)) %>%
+  left_join(cities.geo, by = "city") %>%
+  drop_na()
+```
+
+```{r}
+ggplot() + 
+  map +
+  geom_point(data = reg.pat.agg, 
+             aes(x = lon, y = lat, size = n, alpha = 0.75)) 
+```
+
+Ok, we can even do better, and add a nice density layer on top.
+
+
+```{r,fig.width=12.5,fig.height=7.5}
+#Tryout, see https://ggplot2.tidyverse.org/reference/geom_density_2d.html
+
+ggplot() + 
+  map +
+  #geom_point(data = reg.pat.agg, 
+  #           aes(x = lon, y = lat, size = n), alpha = 0.8) +
+  stat_density2d(data = reg.pat.agg, 
+                 aes(x = lon, y = lat, fill = stat(nlevel), col = stat(nlevel) ), alpha = 0.2, size = 0.2, bins = 10, geom = "polygon") +
+  scale_fill_gradient(low = "skyblue", high = "red") +
+  scale_color_gradient(low = "skyblue", high = "red")
+```
+
+
+```{r}
+library(rayshader)
+
+plot <- ggplot() + 
+  map +
+  #geom_point(data = reg.pat.agg, 
+  #           aes(x = lon, y = lat, size = n), alpha = 0.8) +
+  stat_density2d(data = reg.pat.agg, 
+                 aes(x = lon, y = lat, fill = stat(nlevel), col = stat(nlevel) ), alpha = 0.2, size = 0.2, bins = 10, geom = "polygon") +
+  scale_fill_gradient(low = "skyblue", high = "red") +
+  scale_color_gradient(low = "skyblue", high = "red")
+
+
+par(mfrow = c(1, 2))
+plot_gg(plot, width = 5, height = 4, scale = 300, raytrace = FALSE, preview = TRUE)
+plot_gg(plot, width = 5, height = 4, scale = 300, multicore = TRUE, windowsize = c(1000, 800))
+render_camera(fov = 70, zoom = 0.5, theta = 130, phi = 35)
+render_snapshot(clear = TRUE)
+```
+
+
+
+```{r}
+# Geoplotting
+library(ggmap)
+register_google(key = "AIzaSyDHq3XDPHcLkUnGql1n21Lxw4im6tIPo-Y")
+map2 <- get_map(location = c(85, 18, 137, 45), source = "google", maptype = "roadmap")
+
+plot <- map2 %>% 
+  ggmap() +
+  stat_density2d(data = reg.pat.agg, 
+                 aes(x = lon, y = lat, fill = stat(nlevel)), alpha = 0.25, size = 0.2, bins = 10, geom = "polygon") +
+  scale_fill_gradient(low = "skyblue", high = "red") 
+# + scale_color_gradient(low = "skyblue", high = "red")
+
+par(mfrow = c(1, 2))
+plot_gg(plot, width = 5, height = 4, scale = 300, raytrace = FALSE, preview = TRUE)
+plot_gg(plot, width = 5, height = 4, scale = 300, multicore = TRUE, windowsize = c(1000, 800))
+render_camera(fov = 70, zoom = 0.5, theta = 130, phi = 35)
+render_snapshot(clear = TRUE)
+
+```
+
+
+
+
+
+Neath, isn't it? Here we really see where Chinese patenting activity agglomorates.
+
+# Economic complexity of Chinese patenting activity
+
+Let's not take a look at the complexity of Chinese patenting activity.
+
+We will here use some neath functions from the`R` package `EconGeo`. Its only on github, so we have to install it from there.
+
+```{r}
+#devtools::install_github("PABalland/EconGeo", force = T)
+library(EconGeo)
+```
+
+## Data munging
+First, here we will need to create some big matrices, therefore I will here already define a little helper function which takes an edgelist as input and produces really efficient a sparse `M[i,j]` 2-mode matrix.
+
+```{r}
+## Helper function
+create_sparse_matrix <- function(i.input, j.input){
+  require(Matrix); require(dplyr)
+  mat <- spMatrix(nrow = i.input %>% n_distinct(),
+                  ncol = j.input %>% n_distinct(),
+                  i = i.input %>% factor() %>% as.numeric(),
+                  j = j.input %>% factor() %>% as.numeric(),
+                  x = rep(1, i.input %>% length() ) )
+  
+  row.names(mat) <- i.input %>% factor() %>% levels()
+  colnames(mat) <- j.input %>% factor() %>% levels()
+  return(mat)
+}
+```
+
+Now, we will create this sparse matrix between patents and their associated technology classes.
+
+
+```{r}
+mat.tech <- create_sparse_matrix(i.input = el.pat_tech %>% pull(appln_id),
+                                 j.input = el.pat_tech %>% pull(techn_field_nr))
+```
+
+
+```{r}
+mat.tech <- create_sparse_matrix(i = el.pat_tech %>% pull(appln_id),
+                                 j = el.pat_tech %>% pull(techn_field_nr))
+```
+
+Reminding basic matrix algebra, a 2-mode matrix `M[i,j]` can be transformed to a 1-mode adjacency matrix `M[j,j]` by taking the dot-product (matrix multiplication) of its transposed version `t(M[i,j])`, and into a  1-mode adjacency matrix `M[i,i]` by taking the dot-product with itself. In summary: `M[i,j] %*% M[i,j] = M[j,j]` and `M[i,j] %*% t(M[i,j]) = M[i,i]`. 
+
+We can do that very efficiently with the `crossprod()` and `tcrossprod()` function of the `Matrix` package.
+
+```{r}
+mat.tech %<>% 
+  crossprod() %>% 
+  as.matrix() 
+
+#mat.pat <- mat.tech %>% tcrossprod() %>% as.matrix() # Would create a patent matrix based on shared IPC classes (Not a good idea here)
+```
+
+
+This matrix can be used for the `relatedness()` function to transform the co-occurence adjacency matrix to a similarity matrix. This function computes the relatedness (Hidalgo et al., 2007; Boschma et al., 2015; Balland, 2016) between entities (industries, technologies, . . . ) from their co-occurrence (adjacency) matrix. Different normalization procedures are proposed following van Eck and Waltman (2009): association strength, cosine, Jaccard, and an adapted version of the association strength (probability index). I here choose the cosine similarity, since it is not so sensitive to scale.
+
+```{r}
+mat.tech %<>% 
+  relatedness(method = "cosine")
+```
+
+## The Chinese Technology Space
+With this matrix, we can now create the Chinese "Technology Space" a'la Hidalgo & Hausmann (2007). Here we create a network of technology fields. I will delete below average weights to create some sparsity, and calculate the eigenvector centrality. I will here use the Eigenvector centrality as an easy proxi for technological complexity.
+
+```{r}
+library(tidygraph)
+
+g.tech <- mat.tech %>% as_tbl_graph(directed = FALSE) %N>%
+  left_join(field_names %>% mutate(field_nr = field_nr %>% as.character()), by = c("name" = "field_nr")) %>%
+  mutate(dgr = centrality_eigen(weights = weight)) %E>%
+  filter(weight >= mean(weight))
+
+g.tech 
+```
+
+We will straight away visualize it as a network. We scale the nodes by their centrality, and color them by their higher level tech-sector.
+
+In order to be able to reproduce the same node position in comparative graphs lateron, we will first save the node layout (classical fruchterman-reingold layout).
+
+
+```{r}
+coords.tech <- g.tech %>% layout.fruchterman.reingold() %>% as_tibble()
+colnames(coords.tech) <- c("x", "y")
+```
+
+
+```{r,fig.width=12.5,fig.height=7.5}
+library(ggraph)
+g.tech %E>%
+  ggraph(layout = "manual", node.positions = coords.tech) + 
+  geom_edge_link(aes(width = weight), alpha = 0.2, colour = "grey") + 
+  geom_node_point(aes(colour = sector, size = dgr)) + 
+  geom_node_text(aes(label = field_name), size = 4, repel = TRUE) +
+  theme_graph()
+```
+
+Lets see which tech-field is the most central (complex) one:
+
+```{r}
+g.tech %N>% 
+  arrange(desc(dgr)) %>%
+  as_tibble() %>%
+  slice(1:10)
+```
+
+And the least one...
+
+```{r}
+g.tech %N>% 
+  arrange(dgr) %>%
+  as_tibble() %>%
+  slice(1:10)
+```
+
+
+Optimally, one would have created this space on world-data, and not only Chinese patents, though. Let's, now that we know the overall space, take a look at city level specialization and complexity.
+
+## Specialization pattern of cities
+We here first join our city level patent data with the technology fields. Since a patent can have multiple ones, we this time fractionalize it with a `field_weight`.
+
+```{r}
+reg.tech <- reg.pat %>%
+  left_join(el.pat_tech %>% select(appln_id, techn_field_nr), by = "appln_id") %>%
+  group_by(appln_id) %>%
+  mutate(field_weight = 1 / n()) %>%
+  ungroup()
+```
+
+Now we first aggregate it on the whole time frame. We could for sure also do that sepperate for different years. We filtr our cities with 
+
+```{r}
+reg.tech %<>%
+  group_by(city, techn_field_nr) %>%
+  summarise(n_tech_reg = sum(field_weight)) %>%
+  ungroup() %>%
+  drop_na() 
+```
+
+Now, we for the `EconGeo` package again have to transform it to a matrix. Again, we have to set the rownames, which are depreciated in the `tibble`
+
+```{r}
+mat.reg.tech <- reg.tech %>%
+  arrange(techn_field_nr, city) %>%
+  spread(key = techn_field_nr, value = n_tech_reg, fill = 0) 
+
+rownames(mat.reg.tech) <- mat.reg.tech %>% pull(city)
+
+mat.reg.tech %<>% select(-city) %>%
+  as.matrix() %>%
+  round()
+```
+
+Now, we can use the `location.quotient()` function from `EconGeo`. This function computes location quotients from (incidence) regions - industries matrices. The numerator is the share of a given industry in a given region. The denominator is the share of a this industry in a larger
+economy (overall country for instance). This index is also referred to as the index of Revealed Comparative Advantage (RCA) following Ballasa (1965), or the Hoover-Balassa index. To make it simple, we create a binary one, only indicating if the city has a RCA in the associated field or not. Afterwards, we transform it back to a tibble, set rownames again in a column, and gather it from a long to wide format.
+
+```{r}
+reg.RCA <- mat.reg.tech %>% location.quotient(binary = TRUE) %>% 
+  as.data.frame() %>% 
+  rownames_to_column("city") %>% 
+  as_tibble() %>% 
+  gather(key = "tech_field", value = "RCA", -city) %>%
+  arrange(city, tech_field)
+
+reg.RCA %>% head()
+```
+
+The `Herfindahl()` function computes the Herfindahl index from regions - industries matrices from (incidence) regions - industries matrices. It is a measure of concentration. This index is also known as the Herfindahl-Hirschman index (Herfindahl, 1959; Hirschman, 1945).
+
+```{r}
+mat.reg.tech %>% Herfindahl() %>% as.data.frame() %>% rownames_to_column("city") %>% rename(HH = ".") %>% arrange(desc(HH))
+```
+
+Next, we can compute the Shannon entropy index (Shannon and Weaver, 1949; Frenken et al., 2007) from
+regions - industries matrices from (incidence) regions - industries matrices.
+
+```{r}
+mat.reg.tech %>% entropy() %>% as.data.frame() %>% rownames_to_column("city") %>% rename(SE = ".") %>% arrange(desc(SE))
+```
+
+Now, finally, we can inspect where in the technology space different cities are specialized. We select some of interest.
+
+```{r}
+city_select <- c("beijing", "shanghai", "shenzhen")
+```
+
+In the following, I  plot the technology-space and highlights in red the fields where the city has an RCA. 
+
+### Beijing
+
+```{r,fig.width=12.5,fig.height=7.5}
+i = 1
+g.tech %N>%
+  left_join(reg.RCA %>% filter(city == city_select[i]) %>% select(-city), by = c("name" = "tech_field")) %>%
+  ggraph(layout = "manual", node.positions = coords.tech) + 
+  geom_edge_link(aes(width = weight), alpha = 0.2, colour = "grey") + 
+  geom_node_point(aes(colour = RCA, size = dgr)) + 
+  geom_node_text(aes(label = field_name), size = 5, repel = TRUE) +
+  scale_color_gradient(low = "skyblue", high = "red") +
+  theme_graph() +
+  ggtitle(paste("Technology Space: RCA", city_select[i], sep = " "))
+```
+
+
+### Shanghai
+
+```{r,fig.width=12.5,fig.height=7.5}
+i = 2
+g.tech %N>%
+  left_join(reg.RCA %>% filter(city == city_select[i]) %>% select(-city), by = c("name" = "tech_field")) %>%
+  ggraph(layout = "manual", node.positions = coords.tech) + 
+  geom_edge_link(aes(width = weight), alpha = 0.2, colour = "grey") + 
+  geom_node_point(aes(colour = RCA, size = dgr)) + 
+  geom_node_text(aes(label = field_name), size = 5, repel = TRUE) +
+  scale_color_gradient(low = "skyblue", high = "red") +
+  theme_graph() +
+  ggtitle(paste("Technology Space: RCA", city_select[i], sep = " "))
+```
+
+
+### Shenzhen
+
+```{r,fig.width=12.5,fig.height=7.5}
+i = 3
+g.tech %N>%
+  left_join(reg.RCA %>% filter(city == city_select[i]) %>% select(-city), by = c("name" = "tech_field")) %>%
+  ggraph(layout = "manual", node.positions = coords.tech) + 
+  geom_edge_link(aes(width = weight), alpha = 0.2, colour = "grey") + 
+  geom_node_point(aes(colour = RCA, size = dgr)) + 
+  geom_node_text(aes(label = field_name), size = 5, repel = TRUE) +
+  scale_color_gradient(low = "skyblue", high = "red") +
+  theme_graph() +
+  ggtitle(paste("Technology Space: RCA", city_select[i], sep = " "))
+```
+
+So, what differences do we see?
+
+
+
+
+
