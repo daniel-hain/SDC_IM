@@ -1,5 +1,8 @@
 # SDC Innovation Management
 
+
+
+
 ## Main Teaching Reference
 While this course does not come with a list of mandatory readings, we will often refer to some central resources in R and python, which for the most part can always be accessed in a free and updated online version.  We generally recommed you to use these amazing ressources for problem-solfing and further self-study on the topic.
 
