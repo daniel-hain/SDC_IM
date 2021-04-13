@@ -3,7 +3,7 @@ title: 'Lecture 3-3: The Spatial Dimension - Economic Complexity'
 author: "Daniel S. Hain (dsh@business.aau.dk)"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  html_document:
+  html_notebook:
     code_folding: hide
     df_print: paged
     toc: true
@@ -25,20 +25,22 @@ opts_chunk$set(warning=FALSE,
                message=FALSE,
                fig.align="center"
                )
+
+### Load packages  
+list.of.packages <- c("pacman")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages); rm(list.of.packages, new.packages)
 ```
 
 ```{r setup2}
 ### Load packages  
-# Standard
-library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
-library(magrittr) # For extra-piping operators (eg. %<>%)
-
-# Network specific
-library(tidygraph) # For tidy-style graph manipulation
-library(ggraph) # For ggplot2 style graph plotting
-
-# EconGeo Specific
-library(EconGeo) # Economc Geography functions
+# Note: Maybe pacman needs to be installed
+pacman::p_load(tidyverse # Collection of all the good stuff like dplyr, ggplot2 ect.
+               , magrittr # For extra-piping operators (eg. %<>%)
+               , tidygraph # For tidy-style graph manipulation
+               , ggraph # For ggplot2 style graph plotting
+               , ggmap # Geoplotting / coding
+               )
 ```
 
 
@@ -48,14 +50,14 @@ library(EconGeo) # Economc Geography functions
 So, let's start the fun. I for you extracted Chinese patents from our EPO [PATSTAT](https://www.epo.org/searching-for-patents/business/patstat.html) databases filed at either the EPO or the USTPO. I further provide you adittional data. Lets take a look:
 
 ```{r}
-patents <- readRDS("data/CN_patent.rds")
-inventors <- readRDS("data/CN_inventor.rds") %>% filter(str_detect(city, "china")) %>% mutate(city = city %>% str_remove("\\,.*")) 
-el_pat_inv <- readRDS("data/CN_el_inventor_patent.rds") 
-el_pat_tech <- readRDS("data/CN_el_patent_field.rds")
+patents <- readRDS(url("https://github.com/daniel-hain/SDC_IM/raw/master/data/CN_patent.rds"))
+inventors <- readRDS(url("https://github.com/daniel-hain/SDC_IM/raw/master/data/CN_inventor.rds")) %>% filter(str_detect(city, "china")) %>% mutate(city = city %>% str_remove("\\,.*")) 
+el_pat_inv <- readRDS(url("https://github.com/daniel-hain/SDC_IM/raw/master/data/CN_el_inventor_patent.rds"))
+el_pat_tech <- readRDS(url("https://github.com/daniel-hain/SDC_IM/raw/master/data/CN_el_patent_field.rds"))
 ```
 
 ```{r}
-field_names <- read_csv("data/ipc_technology.csv") %>%
+field_names <- read_csv(url("https://github.com/daniel-hain/SDC_IM/raw/master/data/ipc_technology.csv")) %>%
   select(field_nr, sector, field_name) %>%
   distinct(field_nr, .keep_all = TRUE) %>%
   mutate(field_nr = field_nr) %>%
@@ -84,7 +86,7 @@ Let's not take a look at the complexity of Chinese patenting activity.
 We will here use some neath functions from the`R` package `EconGeo`. Its only on github, so we have to install it from there.
 
 ```{r}
-#devtools::install_github("PABalland/EconGeo", force = T)
+remotes::install_github("PABalland/EconGeo", force = T)
 library(EconGeo)
 ```
 
