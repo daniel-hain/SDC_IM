@@ -18,28 +18,28 @@ Sys.setenv(LANG = "en") # System language = english
 options(scipen = 5) # Disable scientific exponent annotation of numbers
 
 ### Load packages  
+list.of.packages <- c("learnr", "pacman")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages); rm(list.of.packages, new.packages)
 
 # Page building and endering
 library(learnr)
 
-# Standard
-library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
-library(magrittr) # For extra-piping operators (eg. %<>%)
-
 knitr::opts_chunk$set(error=TRUE, 
                       warning=FALSE,
                       fig.align='center')
-```
 
-```{r setup2, include=FALSE}
 # Note: Maybe pacman needs to be installed
 pacman::p_load(OECD # OECD data interface
+               , tidyverse # Collection of all the good stuff like dplyr, ggplot2 ect.
                , countrycode # for countrycode conversion
+               , magrittr # For extra-piping operators (eg. %<>%)
                , GGally # ggplot visualization tools 
                , viridis # pretty color palettes
                , maps # for geoplotting
                )
 ```
+
 
 
 ## Introduction

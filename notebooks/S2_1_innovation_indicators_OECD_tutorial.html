@@ -125,7 +125,7 @@ $(document).ready(function () {
 <li>We briefly discuss how innovation system characteristics can be measured.</li>
 <li>However, focus lies on how we can easily optain data to do so, and what needs to be done with it.</li>
 <li>While manipulating and visualizing, you will develop an intuition for these indicators.</li>
-<li>You will optain skills enabling you to work with multiple sources of indicators, bring them in the shape you need, and analyze/visualize this data.</li>
+<li>You will obtain skills enabling you to work with multiple sources of indicators, bring them in the shape you need, and analyze/visualize this data.</li>
 </ul>
 </div>
 <div id="section-some-intial-questions" class="section level3">
@@ -223,7 +223,7 @@ str(dstruc, max.level = 1) </code></pre>
 <h3></h3>
 <p>We now in real-time download the data with the <code>get_dataset</code> function.</p>
 <pre class="r"><code>data_raw &lt;- OECD::get_dataset(dataset = &quot;STIO_2016&quot;, filter = list (dstruc$COUNTRY$id, vars))
-# saveRDS(data_raw, &quot;media/data_raw.RDS&quot;) # in case we want to save it and not always download it again</code></pre>
+# saveRDS(data_raw, &quot;data_raw.RDS&quot;) # in case we want to save it and not always download it again</code></pre>
 <div class="tutorial-exercise-support" data-label="data_raw" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code># For learnR evaluation
 data_raw &lt;- data_raw</code></pre>
@@ -710,17 +710,26 @@ Sys.setenv(LANG = "en") # System language = english
 options(scipen = 5) # Disable scientific exponent annotation of numbers
 
 ### Load packages  
+list.of.packages <- c("learnr", "pacman")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages); rm(list.of.packages, new.packages)
 
 # Page building and endering
 library(learnr)
 
-# Standard
-library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
-library(magrittr) # For extra-piping operators (eg. %<>%)
-
 knitr::opts_chunk$set(error=TRUE, 
                       warning=FALSE,
                       fig.align='center')
+
+# Note: Maybe pacman needs to be installed
+pacman::p_load(OECD # OECD data interface
+               , tidyverse # Collection of all the good stuff like dplyr, ggplot2 ect.
+               , countrycode # for countrycode conversion
+               , magrittr # For extra-piping operators (eg. %<>%)
+               , GGally # ggplot visualization tools 
+               , viridis # pretty color palettes
+               , maps # for geoplotting
+               )
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
