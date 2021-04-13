@@ -1,0 +1,662 @@
+---
+title: 'Evaluating Innovation System Performance – From simple to complex indicators'
+author: Daniel S. Hain (dsh@business.aau.dk)
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  In this lecture, we will explore examples of innovation and innovation system indicators. It is particularly focussed on the OECD STI outlook.
+---
+
+```{r setup, include=FALSE}
+
+### Generic preamble
+Sys.setenv(LANG = "en") # System language = english
+options(scipen = 5) # Disable scientific exponent annotation of numbers
+
+### Load packages  
+
+# Page building and endering
+library(learnr)
+
+# Standard
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(magrittr) # For extra-piping operators (eg. %<>%)
+
+knitr::opts_chunk$set(error=TRUE, 
+                      warning=FALSE,
+                      fig.align='center')
+```
+
+```{r setup2, include=FALSE}
+# Note: Maybe pacman needs to be installed
+pacman::p_load(OECD # OECD data interface
+               , countrycode # for countrycode conversion
+               , GGally # ggplot visualization tools 
+               , viridis # pretty color palettes
+               , maps # for geoplotting
+               )
+```
+
+
+## Introduction
+
+### This Lecture
+
+* We briefly discuss how innovation system characteristics can be measured.
+* However, focus lies on how we can easily optain data to do so, and what needs to be done with it.
+* While manipulating and visualizing, you will develop an intuition for these indicators.
+* You will obtain skills enabling you to work with multiple sources of indicators, bring them in the shape you need, and analyze/visualize this data.
+
+### Some intial questions
+
+1. What is Innovation System Performance?
+2. How could we measure it?
+3. Who should care, and why?
+
+### Handpicked indicators
+
+* Organizations such as the OECD or WorldBank provide a lot of statistics which could be used to measure innovation system characteristics
+* These represent a mixed-bag of economic output, patent statistics, and survey data.
+* Many can be used to measure characteristics of Innovation Systemd
+* However, what do they measure? IS characteristics? Input? Output?
+* Ecample: The [OECD Science, Technology and Innovation Outlook](https://www.oecd-ilibrary.org/science-and-technology/oecd-science-technology-and-innovation-outlook_25186167)
+
+### Composite indicators
+
+* Quite a set of institutions provide also provide methodologies to produce **composite** indictors, which aggregate stand-alone indicators on different levels.
+* Again, input vs. output vs. throughput vs. efficiency indicators.
+* And, what do we capture when we aggregate to high?
+* An widely used source is the [Global Innovation Index](`https://www.globalinnovationindex.org`)
+
+## The OECD Science, Technology, and Innovation (STI) Outlook 
+
+### Introduction
+
+* [OECD Science, Technology, and Innovation (STI) O1utlook](https://read.oecd-ilibrary.org/science-and-technology/oecd-science-technology-and-innovation-outlook-2018_sti_in_outlook-2018-en#page1) (`STIO_2016`)
+* Biennial review of key trends in science, technology and innovation (STI) policy in OECD countries and a number of major partner economies. 
+
+### 
+
+* We use the `OECD` library `R` to coveniently access data.
+* unfortunatelly only available in the 2016 (newest is 2018) version of the dataset.
+* For adittional information on the variables and their construction, check the metadata (`OECD::browse_metadata("STIO_2016")`)
+
+### Exploring the database
+
+We can easily browse through all available datasets provided by the OECD
+```{r get_OECD, exercise = TRUE}
+dataset_list <- OECD::get_datasets()
+search_string <- "science|technology|innovation"
+OECD::search_dataset(search_string, data = dataset_list) %>% arrange(id)  
+```
+
+###
+
+With the `get_data_structure()` function of the package, we can inspect what we are going to find.
+
+```{r dstruct}
+dstruc <- OECD::get_data_structure("STIO_2016")
+str(dstruc, max.level = 1) 
+```
+
+###
+
+We see the output will be a `list` format. The `INDICATOR` dataframe here contains the description of the indicators. Letys take a look:
+
+```{r OECD_structure}
+dstruc$INDICATOR 
+```
+
+
+### Select Indicators & download
+
+We will focus on a selection of indicators (not encessarily the best, just a quick selection of potentially relevant ones).
+
+```{r}
+vars <- c("GDP_PPPK", "GDP_HAB_PPPK", "GDP_GRO", "POP_NB", "G_XGDP", "BE_XGDP", "GV_XGDP", "RDPERS_EMP", "PTRIAD_GDP", "UNI500_HAB")
+```
+
+I here provide you a selection of different types iof indicators, related to:
+
+* General population, size of the economy, and growth (`POP_NB, GDP_PPPK, GDP_GRO`)
+* Inputs: STI investments (`G_XGDP, BE_XGDP, GV_XGDP`)
+* Throughputs: R&D personal and top universities (`RDPERS_EMP, UNI500_HAB`)
+* Output: Patents (`PTRIAD_GDP`)
+
+Note that we only pick relative and not absolute indicators, which ease international comparison between countries of varying size.
+
+### 
+
+We now in real-time download the data with the `get_dataset` function.
+
+```{r}
+data_raw <- OECD::get_dataset(dataset = "STIO_2016", filter = list (dstruc$COUNTRY$id, vars))
+# saveRDS(data_raw, "data_raw.RDS") # in case we want to save it and not always download it again
+```
+
+```{r data_raw, include=FALSE}
+# For learnR evaluation
+data_raw <- data_raw
+```
+
+###
+
+Lets see what we got
+
+```{r data_raw_show, exercise=TRUE, exercise.setup = "data_raw"}
+data_raw %>% head()
+```
+
+## Data Prepereation
+
+Before we dive into the analysis, we need to do a bit of data cleaning and munginging. Withn this type of macro data we usually have some or all of the following problems (for OECD but also WorldBank, EuroStats etc.):
+
+1. Confusing or unintuitive variable names
+2. Variable type and formatting issues
+3. Country name issues
+4. Data Structure (long vs. wide)
+5. Missing data
+
+### Fomating & variable names
+
+Here a very brief first renaming and formating. In detail, we do:
+
+* Deselect variables we do not need
+* Dename some for convenience
+* Change the format of `year` from `character` to `numeric`
+* Sort the data
+
+```{r}
+data <- data_raw %>%
+  select(-TIME_FORMAT, -OBS_STATUS) %>%
+  rename(ctry.iso3 = COUNTRY,
+         indicator = INDICATOR,
+         year = obsTime,
+         value = obsValue) %>%
+  mutate(year = year %>% as.numeric()) %>%  
+  arrange(ctry.iso3, indicator, year) 
+```
+
+### Country Names
+
+* **Note:** The country here is coded in `iso3` format. 
+* I will here use the functionality of the `countrycode` packag (might need install)
+* Note the `%<>%` pipe from the `magrittr` package, which assigns and executes jointly (`x <- x %>% ... == x %<>%...`)
+
+```{r}
+data %<>% 
+  mutate(ctry.name = ctry.iso3 %>% countrycode::countrycode("iso3c", "country.name")) 
+```
+
+### 
+
+We will later also do summaries ofer 5 year time frames. Therefore I here already define a variable `period`.
+
+```{r}
+data %<>% 
+  group_by(ctry.iso3, indicator) %>%
+  mutate(value = if_else(is.na(value), lag(value), value) ) %>%
+  ungroup() %>%
+  mutate(period = case_when(year <= 2005 ~ 1,
+                            year > 2005 & year <= 2010 ~ 2,
+                            year > 2010 ~ 3)) %>%
+  select(ctry.iso3, ctry.name, year, period, everything()) 
+```
+
+```{r data_clean, include=FALSE}
+# For learnR evaluation
+data <- data
+```
+
+###
+
+Lets see what the final data looks like
+
+```{r data_inspect, exercise=TRUE, exercise.setup = "data_clean"}
+data %>% head()
+```
+
+
+### Data structure (pivoting)
+
+* We also see that the data has a `long` (also called `tidy`) format, meaning the variables to be found in the rows rather than the columns, where the variable name is to be found in the `indicator` column. 
+* This is a typical data structure you will often obtain from statistical offices, the OECD, the Worldbank and so forth. 
+* This is sometimes really convenient for plotting and providing summaries of many variables. 
+* For other tasks, however, we require a `wide` format, where the variables are to be found on the columns. We will use the `pivot_wider()` funcction to do so.
+
+```{r}
+data_wide <- data %>%
+  pivot_wider(names_from = indicator, values_from = value)
+```
+
+```{r data_wide, include=FALSE}
+# For learnR evaluation
+data_wide <- data_wide
+```
+
+Lets take a look what that looks like now
+
+```{r data_wide_inspect, exercise=TRUE, exercise.setup = "data_wide"}
+data_wide %>% head()
+```
+
+
+## First visual inspection
+
+* Now it is time for some first visualization. We will explore:
+  * The correlation between different indicators
+  * The conditional distribution between indicators
+* We will soon do some own ones with the `ggplot2` package. 
+* Here for now use the `GGally` packages, which builds on `ggplot2` and offers some nice standard exploratory visualizations. 
+
+### Correlation & Distribution structure
+
+First, lets look at the correlation matrix.
+
+```{r plot_corr, exercise=TRUE, exercise.setup = "data_wide", fig.height=10, fig.width=10}
+data_wide %>% 
+  select(-ctry.iso3, -ctry.name, -year, -period) %>%
+  ggcorr(label = TRUE, label_size = 3, label_round = 2, label_alpha = TRUE)
+```
+
+###
+
+In adittion, I like the comprehensive `ggpairs` function, which produces a combination of correlation and scatterplot matrix, plus 
+
+```{r plot_dist, exercise=TRUE, exercise.setup = "data_wide", fig.height=10, fig.width=10}
+data_wide %>% 
+  select(-ctry.iso3, -ctry.name, -year, -period) %>%
+  ggpairs(aes(alpha = 0.3), 
+          ggtheme = theme_gray())
+```
+
+
+## Static rankings 
+
+* After getting an overview on the general indicator behavior, lets see how the different countries do. 
+* The most simple thing is just to see a barplot stile ranking of countries. 
+* We start with getting an overall overview over the whole time.
+
+###
+
+* We use the `group_by()` and `summarize()` to aggregate the variables by their mean  on country level:
+
+```{r}
+data_wide_agg <- data_wide %>%
+  select(-year, -period) %>%
+  filter( !(ctry.iso3 %in% c("OECD", "EU28"))) %>%
+  group_by(ctry.iso3, ctry.name) %>% 
+  summarize_all(mean, na.rm = TRUE) %>% 
+  ungroup() 
+```
+
+```{r data_wide_agg, include=FALSE}
+# For learnR evaluation
+data_wide_agg <- data_wide_agg
+```
+
+Lets see what we got...
+
+```{r head_wide_agg, exercise=TRUE, exercise.setup = "data_wide_agg"}
+data_wide_agg %>% head()
+```
+
+
+### GPD growth
+
+* First, lets take a look at a classical economic indicator, GDP growth.
+* Notice the `reorder` function, since otherwise countries would be ordered by name.
+
+```{r plot_gdp_bar, exercise=TRUE, , exercise.setup = "data_wide_agg"}
+data_wide_agg %>%
+  arrange(desc(GDP_GRO)) %>%
+  slice(1:20) %>%
+  ggplot(aes(x = reorder(ctry.iso3, GDP_GRO), y = GDP_GRO)) +
+  geom_bar(stat="identity") +
+  coord_flip() 
+```
+
+### Gross domestic expenditure on R&D (GERD)
+* Next, lets look at some input, such as GERD.
+
+```{r plot_rd_bar, exercise=TRUE, exercise.setup = "data_wide_agg"}
+data_wide_agg %>%
+  arrange(desc(G_XGDP)) %>%
+  slice(1:20) %>%
+  ggplot(aes(x = reorder(ctry.iso3, G_XGDP), y = G_XGDP)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+### Patent Output
+
+* Finally, also look at an output, such as triadic (USTPO+EPO+JPO joint applications) patents.
+
+```{r plot_patent_bar, exercise=TRUE, exercise.setup = "data_wide_agg"}
+data_wide_agg %>%
+  arrange(desc(PTRIAD_GDP)) %>%
+  slice(1:20) %>%
+  ggplot(aes(x = reorder(ctry.iso3, PTRIAD_GDP), y = PTRIAD_GDP)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+```
+
+
+## Comparisons between countries, and relationships between indicators
+
+* Next, it is often helpful to see how two indicators tend to develop together, and how countries scopre on them jointly. It for example makes sense to investigate to which extend some inputs (eg. GERD) translate into outputs (eg. patent applications). 
+* I also plot a regression line with `geom_smooth(method = "lm")`
+* The interactive hover effect I get with using the `ggplotly()`
+
+### Patents & GDP
+
+```{r}
+p_pat <- data_wide_agg %>%
+  ggplot(aes(x =  G_XGDP, y = PTRIAD_GDP, size = GDP_PPPK, colour = GDP_GRO)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = "black") + 
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", alpha = 0.75) +
+  theme(legend.position = "bottom") +
+  labs(x = "GERD as % of GDP", 
+       y = "Triadic Patents per mil. GDP") 
+```
+
+```{r p_pat, include=FALSE}
+# For learnR evaluation
+p_pat <- p_pat
+```
+
+```{r plotly_patents, exercise=TRUE, exercise.setup = "p_pat", fig.width=10,fig.height=10}
+p_pat # %>% plotly::ggplotly()
+```
+
+
+There indeed seems to be a relationship. Yet, some countries appear to translate their inputs more efficiently into output. 
+
+### GERD & Patent output
+
+Lets take a look if goverment expenditure also translates into growth
+
+```{r}
+p_g_p <- data_wide_agg %>%
+  ggplot(aes(x =  G_XGDP, y = GDP_GRO, size = GDP_PPPK)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = "black") + 
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", alpha = 0.75) +
+  theme(legend.position = "bottom") +
+  labs(x = "GERD as % of GDP", 
+       y = "GDP growth %")
+```
+
+```{r p_g_p, include=FALSE}
+# For learnR evaluation
+p_g_p <- p_g_p
+```
+
+```{r plotly_gerd_patents, exercise=TRUE, exercise.setup = "p_g_p", fig.width=10,fig.height=10}
+p_g_p # %>% plotly::ggplotly()
+```
+
+### Your turn
+
+There seems to be none, or even a negative relationship. 
+
+* Take 10 minutes and discuss in groups.
+* Inspect the data if you need. All datasets are oaded
+
+```{r ex_setup1, include=FALSE}
+data <- data
+data_wide <- data_wide
+data_wide_agg <- data_wide_agg
+```
+
+```{r ex1, exercise=TRUE, exercise.setup = "ex_setup1", fig.width=10,fig.height=10}
+# the datasets are: data, data_wide, data_wide_agg
+```
+
+
+## Trends and dynamics
+
+* Up to now, we only looked at average stats over the whole 2000-2016 period. 
+* Now, lets have a look what changed over time. 
+* To look at changes in all countries will probably be somewhat confusing visual, so we here only look at a selection.
+
+```{r}
+ctry <- c("DNK", "DEU", "CHN", "JPN", "KOR", "GBR", "USA")
+```
+
+### GERD over time
+
+We again start with GERD.
+
+```{r}
+p_t_gerd <- data_wide %>%
+  filter(year <= 2014 & ctry.iso3 %in% ctry) %>%
+  ggplot(aes(x = year, y = G_XGDP, color = ctry.iso3)) +
+  geom_line(size = 1)
+```
+
+```{r p_t_gerd, include=FALSE}
+# For learnR evaluation
+p_t_gerd <- p_t_gerd
+```
+
+```{r plotly_gerd, exercise=TRUE, exercise.setup = "p_t_gerd", fig.width=10,fig.height=10}
+p_t_gerd # %>% plotly::ggplotly()
+```
+
+
+### Set of Indicators jointly
+  
+* We can also look at a set of indicators jointly. 
+* Here, the data in long format becomes handy, since we can just do a `facet_wrap()`, which will generate an own plot for every indicator. 
+* Since they all have different scales, we also set `scales = "free"`
+
+```{r}
+p_fac <- data %>%
+  filter(year <= 2014 & ctry.iso3 %in% ctry) %>%
+  ggplot(aes(x = year, y = value, color = ctry.iso3)) +
+  geom_line(size = 1) + 
+  facet_wrap(~ indicator, scales = "free") + 
+  theme(legend.position = "bottom")
+```
+
+```{r p_fac, include=FALSE}
+# For learnR evaluation
+p_fac <- p_fac
+```
+
+```{r plotly_facett, exercise=TRUE, exercise.setup = "p_fac", fig.width=10,fig.height=10}
+p_fac # %>% plotly::ggplotly()
+```
+
+
+## Catching up and development
+
+* Finally, lets have a look at the development of countries along that indicators. 
+* This can be done similar to [Fagerberg & Srholec (2008). National innovation systems, capabilities and economic development. Research policy, 37(9), 1417-1435](https://www.sciencedirect.com/science/article/abs/pii/S0048733308001431) by comparing the initial level and the changes of indicators over time in a matrix.
+* We will first create a new dataset, where we summarize all indicators for every 5 year period. That will make the results a bit more robust to tempral outliers and missing values for certain years.
+
+```{r}
+data_wide_p <- data_wide %>%
+  select(-ctry.name, -year) %>%
+  filter( !(ctry.iso3 %in% c("OECD", "EU28"))) %>%
+  group_by(ctry.iso3, period) %>% 
+  summarize_all(mean, na.rm = TRUE) %>% 
+  ungroup() %>%
+  arrange(ctry.iso3, period)
+```
+
+### Calculating Deltas
+
+* Now, we generate the procentual differenence between the indicators in the first and last period, which we call `xxx_delta`. 
+* We only keep the obervations for period 1 then.
+
+```{r}
+data_wide_p %<>%
+  group_by(ctry.iso3) %>%
+  mutate(GDP_HAB_PPPK_delta =  (lead(GDP_HAB_PPPK, n = 2) - GDP_HAB_PPPK) / GDP_HAB_PPPK,
+         G_XGDP_delta =  (lead(G_XGDP, n = 2) - G_XGDP) / G_XGDP,
+         PTRIAD_GDP_delta = (lead(PTRIAD_GDP, n = 2) - PTRIAD_GDP) / PTRIAD_GDP) %>%
+  ungroup() %>%
+  filter(period == 1 & !(ctry.iso3 %in% c("PRT", "ITA", "GRC", "LUX"))) 
+```
+
+```{r data_wide_p, include=FALSE}
+# For learnR evaluation
+data_wide_p <- data_wide_p
+```
+
+```{r hed_wide_p, exercise=TRUE, exercise.setup = "data_wide_p"}
+data_wide_p %>% head()
+```
+
+###
+
+And now we can plot the initial value of the indicator against its chang over time, which gives us a good idea of the countries development.
+
+```{r}
+p_dev <- data_wide_p %>%
+  ggplot(aes(x =  GDP_HAB_PPPK, y = GDP_HAB_PPPK_delta, size = GDP_PPPK, color = G_XGDP_delta)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = "black")
+```
+
+```{r p_dev, include=FALSE}
+# For learnR evaluation
+p_dev <- p_dev
+```
+
+```{r plot_dev, exercise=TRUE, exercise.setup = "p_dev", fig.width=10,fig.height=10}
+p_dev #  # %>% plotly::ggplotly()
+```
+
+Well, not that bad, but for our final exercise, we can do nicer. We will take this plot and make it a bit clearer, with a couple of simple measures.
+
+###
+
+* Since the data has quite some outliers, we will plot it all on a log-scale (`scale_x_log10(), scale_y_log10()`)
+* We add proper titel, andaxis descriptions to make the the plot understandable.
+* We add horizontal and vertical lines at the median of the indicators.
+* We name the resulting quadrants a la Fagerberg & Srholec (2008).
+
+```{r}
+p_dev_pretty <- p_dev +
+  geom_hline(yintercept = median(data_wide_p$GDP_HAB_PPPK_delta, na.rm = TRUE), linetype = "dashed") +
+  geom_vline(xintercept = median(data_wide_p$GDP_HAB_PPPK, na.rm = TRUE), linetype = "dashed") +
+  annotate("text", x = 10000, y = 0.05, colour = "red", size = 5, label = "Falling behind") + 
+  annotate("text", x = 10000, y = 1.0, colour = "red", size = 5, label = "Catching up") + 
+  annotate("text", x = 45000, y = 0.05, colour = "red", size = 5, label = "Loosing momentum") + 
+  annotate("text", x = 45000, y = 1.0, colour = "red", size = 5, label = "Moving Ahead") +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  theme(legend.position = "bottom") +
+  labs(title = "Economic development since 2000",
+       subtitle = "Inivial GDP vs. GDP growth",
+       x = "log. Initial GDP \n av. 2000-2005 compared with 2010-2015, constant USD ppp", 
+       y = "log. GDP Growth \n av. 2000-2005 compared with 2010-2015, constant USD ppp") 
+```
+
+```{r p_dev_pretty, include=FALSE}
+# For learnR evaluation
+p_dev_pretty <- p_dev_pretty
+```
+
+```{r plot_dev_pretty, exercise=TRUE, , exercise.setup = "p_dev_pretty", fig.width=10,fig.height=10}
+p_dev_pretty  # %>% plotly::ggplotly()
+```
+
+### Exercise
+
+Now reproduce what you learned:
+
+* The last plot is very pretty and helpful for vidualizing economc development, but what about technological development?
+* Could you reproduce the same plot for triadic patent applications?
+
+Do that in to steps:
+1. Create the base plot
+2. If you manage that, try to also make that pretty
+
+```{r ex_final1, exercise=TRUE, , exercise.setup = "data_wide_p", fig.width=10,fig.height=10}
+# use the data_wide_p object
+```
+
+
+## Geo-spatial visualization
+
+Lastly, lets do our first geo-spacial visualization, where we as an exercise plot a map with countries colored according to their BERD. Such map-visualizations often help understanding the geographical dimension of economic activity.
+
+```{r}
+data_map <- data_wide %>% 
+  select(-ctry.iso3, -year) %>%
+  group_by(ctry.name) %>%
+  summarize_all(mean, na.rm = TRUE) %>%
+  ungroup() 
+```
+
+###
+
+* First, we need a map. `ggplot`already provides with `map_data` a dataset with all the country coordinates. It can also produce country level maps in a similar way, but more on that later.
+* We just amke two changes. We delete the Antarctica, since it takes a lot of space and is not that interesting in terms of economic activity. We also recode the country names of the USA and UK to full names. For whatever reasons they are abbreviated in `map_data`.
+
+```{r}
+map_world <- map_data("world") %>% 
+  filter(region != "Antarctica") %>%
+  mutate(region = region %>% recode(
+    USA = "United States",
+    UK = "United Kingdom"))
+```
+
+```{r}
+map_world %>% head()
+```
+
+
+###
+* We now just join it with our OECD STI indicators.
+
+```{r}
+map_world %<>% 
+  left_join(data_map, by = c("region" = "ctry.name" )  )
+```
+
+```{r map_world, include=FALSE}
+# For learnR evaluation
+map_world <- map_world
+```
+
+###
+
+And we can directly plot it. We therefore use the `geom_polygon()` layer. We also use a nicer color palett from the `viridis` package.
+
+```{r}
+p_map <-map_world %>%
+  ggplot(aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = UNI500_HAB)) + 
+  viridis::scale_fill_viridis(option = 'plasma') + 
+  theme_bw()
+```
+
+```{r p_map, include=FALSE}
+# For learnR evaluation
+p_map <- p_map
+```
+
+```{r plot_map, exercise = TRUE, exercise.setup = "p_map", fig.width=10,fig.height=6.5}
+p_map 
+```
+
+
+Pretty, right?
+
+### Exercise
+
+Now, why dont you try it now whit another indicator you are interested in?
+
+```{r ex_map, exercise = TRUE, exercise.setup = "map_world", fig.width=10,fig.height=10}
+# map_world is the object you want to start with
+```
