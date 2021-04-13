@@ -1,0 +1,265 @@
+---
+title: 'Lecture 3: The Spatial Dimension - Economic Geography, Patent Output'
+author: "Daniel S. Hain (dsh@business.aau.dk)"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+### Generic preamble
+Sys.setenv(LANG = "en") # System language = english
+options(scipen = 5) # Disable scientific exponent annotation of numbers
+set.seed(1337) # Set seed for reproducability
+
+### Knitr options
+library(knitr) # For display of the markdown
+opts_chunk$set(warning=FALSE,
+               message=FALSE,
+               fig.align="center"
+               )
+```
+
+```{r setup2}
+### Load packages  
+# Standard
+library(tidyverse) # Collection of all the good stuff like dplyr, ggplot2 ect.
+library(magrittr) # For extra-piping operators (eg. %<>%)
+
+# Network specific
+library(tidygraph) # For tidy-style graph manipulation
+library(ggraph) # For ggplot2 style graph plotting
+
+# Geocoding
+library(ggmap)
+```
+
+
+# A closer look at the  Chinese patenting activity
+
+## Loading and understanding the data structure
+So, let's start the fun. I for you extracted Chinese patents from our EPO [PATSTAT](https://www.epo.org/searching-for-patents/business/patstat.html) databases filed at either the EPO or the USTPO. I further provide you adittional data. Lets take a look:
+
+```{r}
+patents <- readRDS("data/CN_patent.rds")
+inventors <- readRDS("data/CN_inventor.rds") %>% filter(str_detect(city, "china")) %>% mutate(city = city %>% str_remove("\\,.*")) 
+el_pat_inv <- readRDS("data/CN_el_inventor_patent.rds") 
+el_pat_tech <- readRDS("data/CN_el_patent_field.rds")
+```
+
+```{r}
+patents %>% glimpse()
+```
+
+This main dataset contains all Patents in the 2000-2015 period with Chinese inventors, filed at the USTPO or EPO. I only included priority (earliest) patent applications which got granted up to now. We have the following variables:
+
+* `appln_id`: PATSTAT id, unique identifier of patent application
+* `appln_filing_year`: Filing year of first priority
+* `docdb_family_size`: Size of the (simple) patent family
+* `nb_citing_docdb_fam`: Number of citations recieved by the patent family
+* `nb_inventors`: Number of inventors
+
+
+```{r}
+inventors %>% glimpse()
+```
+
+This are all Chinese inventors indicated on the selected patents. Foreign inventors are excluded. We enriched this data with an geocoding exercise. It up to now managed to match only around 75% of all inventors, new and better version in the making.
+
+* `person_id`: Unique inventor identifyer
+* `psn_name`: OECD HAN (harminized) inventor name
+* `city`: Inventors city, extracted with own adressparsing (not 100%)
+* `lon`: City longitude (own geocoding, not 100%)
+* `lat`: City lattitude (own geocoding, not 100%)
+
+
+```{r}
+el_pat_inv %>% glimpse()
+```
+ 
+Edgeliste, matching patents with inventors.
+
+```{r}
+el_pat_tech %>% glimpse()
+```
+
+Edgeliste, matching patent with technology field.
+
+Technology fields represent a higher level of aggregation compared to IPC classes, and classify technologies into 35 fields. Patents can be assigned to multiple fields simultaneously. Since the raw number is not very informative, lets get a field description.
+
+```{r}
+field_names <- read_csv("data/ipc_technology.csv") %>%
+  select(field_nr, sector, field_name) %>%
+  distinct(field_nr, .keep_all = TRUE) %>%
+  mutate(field_nr = field_nr) %>%
+  arrange(field_nr)
+```
+
+```{r}
+field_names %>% distinct(field_name)
+```
+
+On a even higher level, these fields are classified in 5 sectors.
+
+```{r}
+field_names %>% distinct(sector)
+```
+
+## First investigation
+
+Alright, lets take a first look at the development of chinese patents over time.
+
+```{r,fig.width=12.5,fig.height=5}
+patents %>%
+  group_by(appln_filing_year) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = appln_filing_year, y = n)) +
+  geom_line()
+```
+
+Ok, we see that patent applications sharply increased over time... We see somewhat a decline after 2013, but I would suggest the reason to be a lag in reporting.
+
+Lets look at the sectoral split.
+
+```{r,fig.width=12.5,fig.height=5}
+patents_field <- patents %>%
+  left_join(el_pat_tech, by = "appln_id") %>%
+  left_join(field_names, by = c("techn_field_nr" = "field_nr")) 
+```
+
+```{r,fig.width=12.5,fig.height=5}
+patents_field %>%
+  group_by(appln_filing_year, sector) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = appln_filing_year, y = n, col = sector)) +
+  geom_line()
+```
+
+It seems as if electrical engineering leads by far...
+
+# The Geography of Chinese patents
+
+## Data munging
+First, we will create a list of unique cities including their geolocation.
+
+```{r}
+cities_geo <- inventors %>%
+  distinct(city, .keep_all = TRUE) %>%
+  select(city, lon, lat)
+```
+
+Now, lets create a dataset of patents including their applicants and geolocation. To make it easier, we will only look at the first applicants in the `invt_seq_nr`, and discard the rest (alternatively, we could fractionalize them).
+
+```{r}
+reg_pat <- el_pat_inv %>%
+  arrange(appln_id, invt_seq_nr) %>%
+  distinct(appln_id, .keep_all = TRUE) %>%
+  left_join(inventors %>% select(person_id, city), by = "person_id") %>%
+  left_join(patents %>% select(appln_id, appln_filing_year, nb_citing_docdb_fam), by = "appln_id") %>%
+  select(-invt_seq_nr, person_id) 
+```
+
+## Top patenting cities
+Lets see which cities account for the most patents. Any guesses?
+
+```{r}
+top_cities <- reg_pat %>%
+  group_by(city) %>%
+  summarise(n = n(),
+            n.cit = sum(nb_citing_docdb_fam)) %>%
+  arrange(desc(n)) %>%
+  top_n(10, n)
+```
+
+```{r}
+top_cities
+```
+
+## Activity over time
+Lets see how the cities developed over time.
+
+```{r,fig.width=12.5,fig.height=5}
+reg_pat %>%
+  group_by(city, appln_filing_year) %>%
+  summarise(n = n(),
+            n.cit = sum(nb_citing_docdb_fam)) %>%
+  arrange(desc(n)) %>%
+  filter(city %in% (top_cities %>% pull(city))) %>%
+  ggplot(aes(x = appln_filing_year, y = n, col = city)) +
+  geom_line()
+```
+
+## Geoplotting
+Lets see how that on aggregate looks on a map. Therefore, we first need some map-data for china. In the lasts ession I showed you how to create a simpel geoplot with border-shape files. This time we go a step further by downloading finer data directly from map applications, I use the excellent `ggmap` package for that, but it uses a google back-end and needs a developer-id (problematic here in China). While it can be still run here in the RStudioCloud (US server), it requires you to get an GoogleMaps developer account. If you dont want to do that, you can still use some of the functionalities (getting maps), while others (geocoding) will need a developer authentification to use the Google API.
+
+Note: I figured out that Baidu has an almost equal package, so you might also explore that. 
+
+```{r}
+# https://gist.github.com/graydon/11198540
+cn <- c(left = 73.6753792663, bottom = 18.197700914, right = 135.026311477, top = 53.4588044297)
+cn_map <- get_stamenmap(cn, zoom = 5, maptype = "toner-lite") # Stamenmap is another provider of open source maps, so we dont need google here
+```
+
+```{r}
+cn_map %>% ggmap() 
+```
+
+Now, we just need to plot the cities in, scaled by patenting activity.
+
+```{r}
+reg_pat_agg <- reg_pat %>%
+  group_by(city) %>%
+  summarise(n = n(),
+            n.cit = sum(nb_citing_docdb_fam)) %>%
+  left_join(cities_geo, by = "city") %>%
+  drop_na()
+```
+
+```{r}
+cn_map %>% ggmap() +
+  geom_point(data = reg_pat_agg, 
+             aes(x = lon, y = lat, size = n, alpha = 0.5)) 
+```
+
+Ok, we can even do better, and add a nice density layer on top.
+
+```{r,fig.width=12.5,fig.height=7.5}
+cn_map %>% 
+  ggmap() +
+  stat_density2d(data = reg_pat_agg, 
+                 aes(x = lon, y = lat, fill = stat(nlevel), col = stat(nlevel) ), alpha = 0.2, size = 0.2, bins = 10, geom = "polygon") +
+  scale_fill_gradient(low = "skyblue", high = "red") +
+  scale_color_gradient(low = "skyblue", high = "red")
+```
+
+Neath, isn't it? Here we really see where Chinese patenting activity agglomorates.
+
+
+# Endnotes
+
+### References
+
+### More info
+You can find more info about:
+
+#### Patent Data
+* [`EPO PATSTAT`](https://www.epo.org/searching-for-patents/business/patstat.html#tab-1)
+
+#### R packages used
+* [`RMarkdown`](https://rmarkdown.rstudio.com/index.html)
+* [`tidygraph`](https://www.data-imaginist.com/2017/introducing-tidygraph/)
+* [`ggraph`](https://www.data-imaginist.com/2017/announcing-ggraph/)
+* [`ggmap`](https://github.com/dkahle/ggmap)
+
+
+### Session info
+```{r}
+sessionInfo()
+```
