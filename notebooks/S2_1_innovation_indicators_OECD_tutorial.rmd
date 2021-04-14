@@ -140,14 +140,14 @@ data_raw <- OECD::get_dataset(dataset = "STIO_2016", filter = list (dstruc$COUNT
 
 ```{r data_raw, include=FALSE}
 # For learnR evaluation
-data_raw <- data_raw
+data_raw <- OECD::get_dataset(dataset = "STIO_2016", filter = list (dstruc$COUNTRY$id, vars))
 ```
 
 ###
 
 Lets see what we got
 
-```{r data_raw_show, exercise=TRUE, exercise.setup = "data_raw"}
+```{r data_raw_show, exercise=TRUE, exercise.setup="data_raw"}
 data_raw %>% head()
 ```
 
@@ -216,7 +216,7 @@ data <- data
 
 Lets see what the final data looks like
 
-```{r data_inspect, exercise=TRUE, exercise.setup = "data_clean"}
+```{r data_inspect, exercise=TRUE, exercise.setup="data_clean"}
 data %>% head()
 ```
 
@@ -240,7 +240,7 @@ data_wide <- data_wide
 
 Lets take a look what that looks like now
 
-```{r data_wide_inspect, exercise=TRUE, exercise.setup = "data_wide"}
+```{r data_wide_inspect, exercise=TRUE, exercise.setup="data_wide"}
 data_wide %>% head()
 ```
 
@@ -257,7 +257,7 @@ data_wide %>% head()
 
 First, lets look at the correlation matrix.
 
-```{r plot_corr, exercise=TRUE, exercise.setup = "data_wide", fig.height=10, fig.width=10}
+```{r plot_corr, exercise=TRUE, exercise.setup="data_wide", fig.height=10, fig.width=10}
 data_wide %>% 
   select(-ctry.iso3, -ctry.name, -year, -period) %>%
   ggcorr(label = TRUE, label_size = 3, label_round = 2, label_alpha = TRUE)
@@ -267,7 +267,7 @@ data_wide %>%
 
 In adittion, I like the comprehensive `ggpairs` function, which produces a combination of correlation and scatterplot matrix, plus 
 
-```{r plot_dist, exercise=TRUE, exercise.setup = "data_wide", fig.height=10, fig.width=10}
+```{r plot_dist, exercise=TRUE, exercise.setup="data_wide", fig.height=10, fig.width=10}
 data_wide %>% 
   select(-ctry.iso3, -ctry.name, -year, -period) %>%
   ggpairs(aes(alpha = 0.3), 
@@ -301,7 +301,7 @@ data_wide_agg <- data_wide_agg
 
 Lets see what we got...
 
-```{r head_wide_agg, exercise=TRUE, exercise.setup = "data_wide_agg"}
+```{r head_wide_agg, exercise=TRUE, exercise.setup="data_wide_agg"}
 data_wide_agg %>% head()
 ```
 
@@ -311,7 +311,7 @@ data_wide_agg %>% head()
 * First, lets take a look at a classical economic indicator, GDP growth.
 * Notice the `reorder` function, since otherwise countries would be ordered by name.
 
-```{r plot_gdp_bar, exercise=TRUE, , exercise.setup = "data_wide_agg"}
+```{r plot_gdp_bar, exercise=TRUE, , exercise.setup="data_wide_agg"}
 data_wide_agg %>%
   arrange(desc(GDP_GRO)) %>%
   slice(1:20) %>%
@@ -323,7 +323,7 @@ data_wide_agg %>%
 ### Gross domestic expenditure on R&D (GERD)
 * Next, lets look at some input, such as GERD.
 
-```{r plot_rd_bar, exercise=TRUE, exercise.setup = "data_wide_agg"}
+```{r plot_rd_bar, exercise=TRUE, exercise.setup="data_wide_agg"}
 data_wide_agg %>%
   arrange(desc(G_XGDP)) %>%
   slice(1:20) %>%
@@ -336,7 +336,7 @@ data_wide_agg %>%
 
 * Finally, also look at an output, such as triadic (USTPO+EPO+JPO joint applications) patents.
 
-```{r plot_patent_bar, exercise=TRUE, exercise.setup = "data_wide_agg"}
+```{r plot_patent_bar, exercise=TRUE, exercise.setup="data_wide_agg"}
 data_wide_agg %>%
   arrange(desc(PTRIAD_GDP)) %>%
   slice(1:20) %>%
@@ -370,7 +370,7 @@ p_pat <- data_wide_agg %>%
 p_pat <- p_pat
 ```
 
-```{r plotly_patents, exercise=TRUE, exercise.setup = "p_pat", fig.width=10,fig.height=10}
+```{r plotly_patents, exercise=TRUE, exercise.setup="p_pat", fig.width=10,fig.height=10}
 p_pat # %>% plotly::ggplotly()
 ```
 
@@ -397,7 +397,7 @@ p_g_p <- data_wide_agg %>%
 p_g_p <- p_g_p
 ```
 
-```{r plotly_gerd_patents, exercise=TRUE, exercise.setup = "p_g_p", fig.width=10,fig.height=10}
+```{r plotly_gerd_patents, exercise=TRUE, exercise.setup="p_g_p", fig.width=10,fig.height=10}
 p_g_p # %>% plotly::ggplotly()
 ```
 
@@ -414,7 +414,7 @@ data_wide <- data_wide
 data_wide_agg <- data_wide_agg
 ```
 
-```{r ex1, exercise=TRUE, exercise.setup = "ex_setup1", fig.width=10,fig.height=10}
+```{r ex1, exercise=TRUE, exercise.setup="ex_setup1", fig.width=10,fig.height=10}
 # the datasets are: data, data_wide, data_wide_agg
 ```
 
@@ -445,7 +445,7 @@ p_t_gerd <- data_wide %>%
 p_t_gerd <- p_t_gerd
 ```
 
-```{r plotly_gerd, exercise=TRUE, exercise.setup = "p_t_gerd", fig.width=10,fig.height=10}
+```{r plotly_gerd, exercise=TRUE, exercise.setup="p_t_gerd", fig.width=10,fig.height=10}
 p_t_gerd # %>% plotly::ggplotly()
 ```
 
@@ -470,7 +470,7 @@ p_fac <- data %>%
 p_fac <- p_fac
 ```
 
-```{r plotly_facett, exercise=TRUE, exercise.setup = "p_fac", fig.width=10,fig.height=10}
+```{r plotly_facett, exercise=TRUE, exercise.setup="p_fac", fig.width=10,fig.height=10}
 p_fac # %>% plotly::ggplotly()
 ```
 
@@ -511,7 +511,7 @@ data_wide_p %<>%
 data_wide_p <- data_wide_p
 ```
 
-```{r hed_wide_p, exercise=TRUE, exercise.setup = "data_wide_p"}
+```{r hed_wide_p, exercise=TRUE, exercise.setup="data_wide_p"}
 data_wide_p %>% head()
 ```
 
@@ -531,7 +531,7 @@ p_dev <- data_wide_p %>%
 p_dev <- p_dev
 ```
 
-```{r plot_dev, exercise=TRUE, exercise.setup = "p_dev", fig.width=10,fig.height=10}
+```{r plot_dev, exercise=TRUE, exercise.setup="p_dev", fig.width=10,fig.height=10}
 p_dev #  # %>% plotly::ggplotly()
 ```
 
@@ -566,7 +566,7 @@ p_dev_pretty <- p_dev +
 p_dev_pretty <- p_dev_pretty
 ```
 
-```{r plot_dev_pretty, exercise=TRUE, , exercise.setup = "p_dev_pretty", fig.width=10,fig.height=10}
+```{r plot_dev_pretty, exercise=TRUE, , exercise.setup="p_dev_pretty", fig.width=10,fig.height=10}
 p_dev_pretty  # %>% plotly::ggplotly()
 ```
 
@@ -581,7 +581,7 @@ Do that in to steps:
 1. Create the base plot
 2. If you manage that, try to also make that pretty
 
-```{r ex_final1, exercise=TRUE, , exercise.setup = "data_wide_p", fig.width=10,fig.height=10}
+```{r ex_final1, exercise=TRUE, , exercise.setup="data_wide_p", fig.width=10,fig.height=10}
 # use the data_wide_p object
 ```
 
@@ -646,7 +646,7 @@ p_map <-map_world %>%
 p_map <- p_map
 ```
 
-```{r plot_map, exercise = TRUE, exercise.setup = "p_map", fig.width=10,fig.height=6.5}
+```{r plot_map, exercise = TRUE, exercise.setup="p_map", fig.width=10,fig.height=6.5}
 p_map 
 ```
 
@@ -657,6 +657,6 @@ Pretty, right?
 
 Now, why dont you try it now whit another indicator you are interested in?
 
-```{r ex_map, exercise = TRUE, exercise.setup = "map_world", fig.width=10,fig.height=10}
+```{r ex_map, exercise = TRUE, exercise.setup="map_world", fig.width=10,fig.height=10}
 # map_world is the object you want to start with
 ```
