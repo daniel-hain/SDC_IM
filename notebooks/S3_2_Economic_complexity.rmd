@@ -86,7 +86,7 @@ Let's not take a look at the complexity of Chinese patenting activity.
 We will here use some neath functions from the`R` package `EconGeo`. Its only on github, so we have to install it from there.
 
 ```{r}
-remotes::install_github("PABalland/EconGeo", force = T)
+#remotes::install_github("PABalland/EconGeo", force = T)
 library(EconGeo)
 ```
 
@@ -234,11 +234,13 @@ mat_reg_tech <- reg_tech %>%
   arrange(techn_field_nr, city) %>%
   pivot_wider(names_from = techn_field_nr, values_from = n_tech_reg, values_fill = list(n_tech_reg = 0))
 
-rownames(mat_reg_tech) <- mat_reg_tech %>% pull(city)
+rn_save <- mat_reg_tech %>% pull(city)
 
 mat_reg_tech %<>% select(-city) %>%
   as.matrix() %>%
   round()
+
+rownames(mat_reg_tech) <- rn_save
 ```
 
 Lets take a look:

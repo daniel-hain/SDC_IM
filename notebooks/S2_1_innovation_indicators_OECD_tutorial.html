@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Daniel S. Hain (dsh@business.aau.dk)" />
+
+
+<meta name="progressive" content="true" />
+<meta name="allow-skip" content="true" />
+
+<title>Evaluating Innovation System Performance – From simple to complex indicators</title>
+
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+<!-- taken from https://github.com/rstudio/rmarkdown/blob/67b7f5fc779e4cfdfd0f021d3d7745b6b6e17149/inst/rmd/h/default.html#L296-L362 -->
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+<!-- end tabsets -->
+
+
+
+</head>
+
+<body>
+
+
+
+<div class="pageContent band">
+<div class="bandContent page">
+
+<div class="topics">
+
+<div id="section-introduction" class="section level2">
+<h2>Introduction</h2>
+<div id="section-this-lecture" class="section level3">
+<h3>This Lecture</h3>
+<ul>
+<li>We briefly discuss how innovation system characteristics can be measured.</li>
+<li>However, focus lies on how we can easily optain data to do so, and what needs to be done with it.</li>
+<li>While manipulating and visualizing, you will develop an intuition for these indicators.</li>
+<li>You will obtain skills enabling you to work with multiple sources of indicators, bring them in the shape you need, and analyze/visualize this data.</li>
+</ul>
+</div>
+<div id="section-some-intial-questions" class="section level3">
+<h3>Some intial questions</h3>
+<ol style="list-style-type: decimal">
+<li>What is Innovation System Performance?</li>
+<li>How could we measure it?</li>
+<li>Who should care, and why?</li>
+</ol>
+</div>
+<div id="section-handpicked-indicators" class="section level3">
+<h3>Handpicked indicators</h3>
+<ul>
+<li>Organizations such as the OECD or WorldBank provide a lot of statistics which could be used to measure innovation system characteristics</li>
+<li>These represent a mixed-bag of economic output, patent statistics, and survey data.</li>
+<li>Many can be used to measure characteristics of Innovation Systemd</li>
+<li>However, what do they measure? IS characteristics? Input? Output?</li>
+<li>Ecample: The <a href="https://www.oecd-ilibrary.org/science-and-technology/oecd-science-technology-and-innovation-outlook_25186167">OECD Science, Technology and Innovation Outlook</a></li>
+</ul>
+</div>
+<div id="section-composite-indicators" class="section level3">
+<h3>Composite indicators</h3>
+<ul>
+<li>Quite a set of institutions provide also provide methodologies to produce <strong>composite</strong> indictors, which aggregate stand-alone indicators on different levels.</li>
+<li>Again, input vs. output vs. throughput vs. efficiency indicators.</li>
+<li>And, what do we capture when we aggregate to high?</li>
+<li>An widely used source is the <a href="%60https://www.globalinnovationindex.org%60">Global Innovation Index</a></li>
+</ul>
+</div>
+</div>
+<div id="section-the-oecd-science-technology-and-innovation-sti-outlook" class="section level2">
+<h2>The OECD Science, Technology, and Innovation (STI) Outlook</h2>
+<div id="section-introduction-1" class="section level3">
+<h3>Introduction</h3>
+<ul>
+<li><a href="https://read.oecd-ilibrary.org/science-and-technology/oecd-science-technology-and-innovation-outlook-2018_sti_in_outlook-2018-en#page1">OECD Science, Technology, and Innovation (STI) O1utlook</a> (<code>STIO_2016</code>)</li>
+<li>Biennial review of key trends in science, technology and innovation (STI) policy in OECD countries and a number of major partner economies.</li>
+</ul>
+</div>
+<div id="section-section" class="section level3">
+<h3></h3>
+<ul>
+<li>We use the <code>OECD</code> library <code>R</code> to coveniently access data.</li>
+<li>unfortunatelly only available in the 2016 (newest is 2018) version of the dataset.</li>
+<li>For adittional information on the variables and their construction, check the metadata (<code>OECD::browse_metadata("STIO_2016")</code>)</li>
+</ul>
+</div>
+<div id="section-exploring-the-database" class="section level3">
+<h3>Exploring the database</h3>
+We can easily browse through all available datasets provided by the OECD
+<div class="tutorial-exercise" data-label="get_OECD" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>dataset_list &lt;- OECD::get_datasets()
+search_string &lt;- &quot;science|technology|innovation&quot;
+OECD::search_dataset(search_string, data = dataset_list) %&gt;% arrange(id)  </code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-section-1" class="section level3">
+<h3></h3>
+<p>With the <code>get_data_structure()</code> function of the package, we can inspect what we are going to find.</p>
+<pre class="r"><code>dstruc &lt;- OECD::get_data_structure(&quot;STIO_2016&quot;)
+str(dstruc, max.level = 1) </code></pre>
+<pre><code>## List of 6
+##  $ VAR_DESC   :&#39;data.frame&#39;: 6 obs. of  2 variables:
+##  $ COUNTRY    :&#39;data.frame&#39;: 52 obs. of  2 variables:
+##  $ INDICATOR  :&#39;data.frame&#39;: 715 obs. of  2 variables:
+##  $ YEAR       :&#39;data.frame&#39;: 17 obs. of  2 variables:
+##  $ OBS_STATUS :&#39;data.frame&#39;: 16 obs. of  2 variables:
+##  $ TIME_FORMAT:&#39;data.frame&#39;: 5 obs. of  2 variables:</code></pre>
+</div>
+<div id="section-section-2" class="section level3">
+<h3></h3>
+<p>We see the output will be a <code>list</code> format. The <code>INDICATOR</code> dataframe here contains the description of the indicators. Letys take a look:</p>
+<pre class="r"><code>dstruc$INDICATOR </code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["label"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"RD","2":"Research and Development (R&D) expenditure (select)"},{"1":"GERD","2":"R&D, all performers (select)"},{"1":"G","2":"GERD (Gross domestic expenditure on R&D) (select)"},{"1":"G_NC","2":"GERD, million NC"},{"1":"G_PPP","2":"GERD, million USD PPPs"},{"1":"G_PPPK","2":"GERD, million constant USD PPPs"},{"1":"G_XGDP","2":"GERD, % of GDP"},{"1":"G_XO","2":"GERD, OECD share, %"},{"1":"G_XW","2":"GERD, world share estimate, %"},{"1":"G_GRO","2":"GERD, compound annual growth rate at constant prices, %"},{"1":"G_F","2":"GERD by source of funds (select)"},{"1":"G_BEF","2":"Industry funding (select)"},{"1":"G_BEF_NC","2":"GERD, financed by industry, million NC"},{"1":"G_BEF_PPP","2":"GERD, financed by industry, million USD PPPs"},{"1":"G_BEF_PPPK","2":"GERD, financed by industry, million constant USD PPPs"},{"1":"G_BEF_XG","2":"GERD, financed by industry, % of total GERD"},{"1":"G_BEF_XGDP","2":"GERD, financed by industry, % of GDP"},{"1":"G_GVF","2":"GERD, financed by government (select)"},{"1":"G_GVF_NC","2":"GERD, financed by government, million NC"},{"1":"G_GVF_PPP","2":"GERD, financed by government, million USD PPPs"},{"1":"G_GVF_PPPK","2":"GERD, financed by government, million constant USD PPPs"},{"1":"G_GVF_XG","2":"GERD, financed by government, % of total GERD"},{"1":"G_GVF_XGDP","2":"GERD, financed by government, % of GDP"},{"1":"G_ONF","2":"Other national fundings (select)"},{"1":"G_HEF","2":"GERD, financed by higher education (select)"},{"1":"G_HEF_NC","2":"GERD, financed by higher education, million NC"},{"1":"G_HEF_PPP","2":"GERD, financed by higher education, million USD PPPs"},{"1":"G_HEF_PPPK","2":"GERD, financed by higher education, million constant USD PPPs"},{"1":"G_HEF_XG","2":"GERD, financed by higher education, % of total GERD"},{"1":"G_HEF_XGDP","2":"GERD, financed by higher education, % of GDP"},{"1":"G_PUBF","2":"GERD, publically financed by government and higher education (select)"},{"1":"G_PUBF_NC","2":"GERD, publically financed (by government and higher education) million NC"},{"1":"G_PUBF_PPP","2":"GERD, publically financed (by government and higher education) million USD PPPs"},{"1":"G_PUBF_PPPK","2":"GERD, publically financed (by government and higher education) million constant USD PPPs"},{"1":"G_PUBF_XG","2":"GERD, publically financed (by government and higher education),  % of total GERD"},{"1":"G_PUBF_XGDP","2":"GERD, publically financed, % of GDP"},{"1":"G_PUBF_GRO","2":"GERD, publically financed, compound annual growth rate - constant prices"},{"1":"G_PNPF","2":"GERD, financed by private non-profit sector (select)"},{"1":"G_PNPF_NC","2":"GERD, financed by private non-profit sector, million NC"},{"1":"G_PNPF_PPP","2":"GERD, financed by private non-profit sector, million USD PPPs"},{"1":"G_PNPF_PPPK","2":"GERD, financed by private non-profit sector, million constant USD PPPs"},{"1":"G_PNPF_XG","2":"GERD, financed by private non-profit sector, % of total GERD"},{"1":"G_PNPF_XGDP","2":"GERD, financed by private non-profit sector, % of total GDP"},{"1":"G_ONF_F","2":"GERD, financed by other national sources (select)"},{"1":"G_ONF_NC","2":"GERD, financed by other national sources, million NC"},{"1":"G_ONF_PPP","2":"GERD, financed by other national sources, million USD PPPs"},{"1":"G_ONF_PPPK","2":"GERD, financed by other national sources, million constant USD PPPs"},{"1":"G_ONF_XG","2":"GERD, financed by other national sources, % of total GERD"},{"1":"G_ONF_XGDP","2":"GERD, financed by other national sources, % of GDP"},{"1":"G_ONF_GRO","2":"GERD, financed by other national sources, compound annual growth rate at constant prices, %"},{"1":"G_AF","2":"Funding from abroad (select)"},{"1":"G_AF_NC","2":"GERD, financed by abroad, million NC"},{"1":"G_AF_PPP","2":"GERD, financed by abroad, million USD PPPs"},{"1":"G_AF_PPPK","2":"GERD, financed by abroad, million constant USD PPPs"},{"1":"G_AF_XG","2":"GERD, financed by abroad, % of total GERD"},{"1":"G_AF_XGDP","2":"GERD, financed by abroad, % of GDP"},{"1":"G_TRD","2":"R&D expenditure by type of R&D (select)"},{"1":"G_BR","2":"Basic research (select)"},{"1":"G_BR_NC","2":"Basic research expenditures, million NC"},{"1":"G_BR_PPP","2":"Basic research expenditures, million USD PPPs"},{"1":"G_BR_XGDP","2":"Basic research expenditures, % of GDP"},{"1":"G_AR","2":"Applied research (select)"},{"1":"G_AR_NC","2":"Applied research expenditures, million NC"},{"1":"G_AR_PPP","2":"Applied research expenditures, million USD PPPs"},{"1":"G_AR_XGDP","2":"Applied research expenditures, % of GDP"},{"1":"G_ED","2":"Experimental development (select)"},{"1":"G_ED_NC","2":"Experimental development expenditures, million NC"},{"1":"G_ED_PPP","2":"Experimental development expenditures, million USD PPPs"},{"1":"G_ED_XGDP","2":"Experimental development expenditures, % of GDP"},{"1":"BERD","2":"R&D, business sector (select)"},{"1":"BE","2":"BERD (Business enterprise expenditure on R&D) (select)"},{"1":"BE_NC","2":"BERD, million NC"},{"1":"BE_PPP","2":"BERD, million USD PPPs"},{"1":"BE_PPPK","2":"BERD, million constant USD PPPs"},{"1":"BE_XG","2":"BERD, % of total gross domestic R&D expenditures (GERD)"},{"1":"BE_XGDP","2":"BERD, % of GDP"},{"1":"BE_GRO","2":"BERD, compound annual growth rate at constant prices, %"},{"1":"BE_XGDP_I","2":"BERD, % of GDP, performance index (STI Outlook)"},{"1":"BE_F","2":"BERD by source of funds (select)"},{"1":"BE_BEF","2":"Industry funding (select)"},{"1":"BE_BEF_NC","2":"BERD, financed by industry, million NC"},{"1":"BE_BEF_PPP","2":"BERD, financed by industry, million USD PPPs"},{"1":"BE_BEF_PPPK","2":"BERD, financed by industry, million constant USD PPPs"},{"1":"BE_BEF_XBE","2":"BERD, financed by industry, % of total BERD"},{"1":"BE_BEF_XG","2":"BERD, financed by industry, % of total GERD"},{"1":"BE_BEF_XGDP","2":"BERD, financed by industry, % of GDP"},{"1":"BE_GVF","2":"Government funding (select)"},{"1":"BE_DGVF","2":"Direct government funding (subsidies, grants, procurement) (select)"},{"1":"BE_DGVF_NC","2":"BERD, financed by government (direct), million NC"},{"1":"BE_DGVF_PPP","2":"BERD, financed by government (direct), million USD PPPs"},{"1":"BE_DGVF_PPPK","2":"BERD, financed by government (direct), million constant USD PPPs"},{"1":"BE_DGVF_XBE","2":"BERD, financed by government (direct), % of total BERD"},{"1":"BE_DGVF_XG","2":"BERD, financed by government (direct), % of total GERD"},{"1":"BE_DGVF_XGDP","2":"BERD, financed by government (direct), % of GDP"},{"1":"BE_DTF","2":"Total direct and tax funding (select)"},{"1":"BE_DTF_XBE","2":"BERD, financed by direct and tax funding, % of total BERD"},{"1":"BE_DTF_XGDP","2":"BERD, financed by direct and tax funding, % of GDP"},{"1":"BE_DTF_XPUF","2":"BERD, financed by direct and tax funding, % of total public funding of R&D"},{"1":"BE_ONF","2":"Other national fundings (select)"},{"1":"BE_HEF","2":"BERD, financed by higher education (select)"},{"1":"BE_HEF_NC","2":"BERD, financed by higher education, million NC"},{"1":"BE_HEF_PPP","2":"BERD, financed by higher education, million USD PPPs"},{"1":"BE_HEF_PPPK","2":"BERD, financed by higher education, million constant USD PPPs"},{"1":"BE_HEF_XGDP","2":"BERD, financed by higher education, % of GDP"},{"1":"BE_PNPF","2":"BERD, financed by private non-profit sector (select)"},{"1":"BE_PNPF_NC","2":"BERD, financed by private non-profit sector, million NC"},{"1":"BE_PNPF_PPP","2":"BERD, financed by private non-profit sector, million USD PPPs"},{"1":"BE_PNPF_PPPK","2":"BERD, financed by private non-profit sector, million constant USD PPPs"},{"1":"BE_PNPF_XGDP","2":"BERD, financed by private non-profit sector, % of GDP"},{"1":"BE_ONF_F","2":"Other national fundings (select)"},{"1":"BE_ONF_NC","2":"BERD, financed by other national sources, million NC"},{"1":"BE_ONF_PPP","2":"BERD, financed by other national sources, million USD PPPs"},{"1":"BE_ONF_PPPK","2":"BERD, financed by other national sources, million constant USD PPPs"},{"1":"BE_AF","2":"Funding from abroad (select)"},{"1":"BE_AF_NC","2":"BERD, financed by abroad, million NC"},{"1":"BE_AF_PPP","2":"BERD, financed by abroad, million USD PPPs"},{"1":"BE_AF_PPPK","2":"BERD, financed by abroad, million constant USD PPPs"},{"1":"BE_AF_XGDP","2":"BERD, financed by abroad, % of GDP"},{"1":"BE_SIZ","2":"BERD by size of firms (select)"},{"1":"SME","2":"Small and medium-sized firms (SMEs) (select)"},{"1":"BE_SME_XBE","2":"BERD, SMEs, % of total BERD"},{"1":"LGE","2":"Large firms (select)"},{"1":"BE_LGE_XBE","2":"BERD, large firms, % of total BERD"},{"1":"BE_TRD","2":"Business R&D by type of R&D (select)"},{"1":"BE_AR","2":"Applied research (select)"},{"1":"BE_AR_NC","2":"Applied research expenditures, business enterprise, million NC"},{"1":"BE_AR_PPP","2":"Applied research expenditures, business enterprise, million USD PPPs"},{"1":"BE_AR_XGDP","2":"Applied research expenditures, business enterprise, % of GDP"},{"1":"BE_ED","2":"Experimental development (select)"},{"1":"BE_ED_NC","2":"Experimental development expenditures, business enterprise, million NC"},{"1":"BE_ED_PPP","2":"Experimental development expenditures, business enterprise, million USD PPPs"},{"1":"BE_ED_XGDP","2":"Experimental development expenditures, business enterprise, % of GDP"},{"1":"BE_SC","2":"Structural composition of BERD (select)"},{"1":"HITECH_XBE","2":"High tech manufacturing, % BERD (main activity)"},{"1":"MLTECH_XBE","2":"Medium to low-tech manufacturing, % BERD (main activity)"},{"1":"HKMS_XBE","2":"High-knowledge market services, % BERD (main activity)"},{"1":"LKMS_XBE","2":"Low-knowledge services, % BERD (main activity)"},{"1":"RSRC_XBE","2":"Primary and resource-based industries, % BERD"},{"1":"NRSRC_XBE","2":"Non-resource-based manufacturing industries, % BERD"},{"1":"BE_XBE","2":"BERD performed in industry (Mining, Manufacturing and Utilities), % of BERD"},{"1":"SER_XBE","2":"BERD performed in services, % of BERD"},{"1":"PUB_RD","2":"R&D, public sector (select)"},{"1":"HE","2":"HERD (Higher education expenditure on R&D) (select)"},{"1":"HE_NC","2":"HERD, million NC"},{"1":"HE_PPP","2":"HERD, million USD PPPs"},{"1":"HE_PPPK","2":"HERD, million constant USD PPPs"},{"1":"HE_XG","2":"HERD, % of total gross domestic R&D expenditures (GERD)"},{"1":"HE_XPUB","2":"HERD, % of public sector R&D expenditures (PSERD)"},{"1":"HE_XGDP","2":"HERD, % of GDP"},{"1":"HE_F","2":"HERD by source of funding (select)"},{"1":"HE_BEF","2":"Industry funding (select)"},{"1":"HE_BEF_NC","2":"HERD, financed by industry, million NC"},{"1":"HE_BEF_PPP","2":"HERD, financed by industry, million USD PPPs"},{"1":"HE_BEF_PPPK","2":"HERD, financed by industry, million constant USD PPPs"},{"1":"HE_BEF_XHE","2":"HERD, financed by industry, % of total HERD"},{"1":"HE_BEF_XG","2":"HERD, financed by industry, % of total GERD"},{"1":"HE_BEF_XGDP","2":"HERD, financed by industry, % of GDP"},{"1":"HE_PUBF","2":"Public funding (governement and higher education) (select)"},{"1":"HE_GVF","2":"HERD, financed by government (select)"},{"1":"HE_GVF_NC","2":"HERD, financed by government, million NC"},{"1":"HE_GVF_PPP","2":"HERD, financed by government, million USD PPPs"},{"1":"HE_GVF_PPPK","2":"HERD, financed by government, million constant USD PPPs"},{"1":"HE_GVF_XG","2":"HERD, financed by government, % of total GERD"},{"1":"HE_GVF_XGDP","2":"HERD, financed by government, % of GDP"},{"1":"HE_HEF","2":"HERD, financed by higher education (select)"},{"1":"HE_HEF_NC","2":"HERD, financed by higher education, million NC"},{"1":"HE_HEF_PPP","2":"HERD, financed by higher education, million USD PPPs"},{"1":"HE_HEF_PPPK","2":"HERD, financed by higher education, million constant USD PPPs"},{"1":"HE_HEF_XG","2":"HERD, financed by higher education, % of total GERD"},{"1":"HE_HEF_XGDP","2":"HERD, financed by higher education, % of GDP"},{"1":"HE_ONF","2":"Other national sources (select)"},{"1":"HE_PNPF","2":"HERD, financed by private non-profit sector (select)"},{"1":"HE_PNPF_NC","2":"HERD, financed by private non-profit sector, million NC"},{"1":"HE_PNPF_PPP","2":"HERD, financed by private non-profit sector, million USD PPPs"},{"1":"HE_PNPF_XGDP","2":"HERD, financed by private non-profit sector, % of GDP"},{"1":"HE_AF","2":"Funding from abroad (select)"},{"1":"HE_AF_NC","2":"HERD, financed by abroad, million NC"},{"1":"HE_AF_PPP","2":"HERD, financed by abroad, million USD PPPs"},{"1":"HE_AF_XGDP","2":"HERD, financed by abroad, % of  GDP"},{"1":"HE_TRD","2":"Higher education R&D by type of R&D (select)"},{"1":"HE_BR","2":"Basic research (select)"},{"1":"HE_BR_NC","2":"Basic research expenditures, higher education, million NC"},{"1":"HE_BR_PPP","2":"Basic research expenditures, higher education, million USD PPPs"},{"1":"HE_BR_PPPK","2":"Basic research expenditures, higher education, million constant USD PPPs"},{"1":"HE_BR_XGDP","2":"Basic research expenditures, higher education, % of GDP"},{"1":"HE_BR_XBR","2":"Basic research expenditures, higher education, % of  total basic research"},{"1":"HE_AR","2":"Applied research (select)"},{"1":"HE_AR_NC","2":"Applied research expenditures, higher education, million NC"},{"1":"HE_AR_PPP","2":"Applied research expenditures, higher education, million USD PPPs"},{"1":"HE_AR_PPPK","2":"Applied research expenditures, higher education, million constant USD PPPs"},{"1":"HE_AR_XGDP","2":"Applied research expenditures, higher education, % of GDP"},{"1":"HE_ED","2":"Experimental development (select)"},{"1":"HE_ED_NC","2":"Experimental development expenditures, higher education, million NC"},{"1":"HE_ED_PPP","2":"Experimental development expenditures, higher education, million USD PPPs"},{"1":"HE_ED_PPPK","2":"Experimental development expenditures, higher education, million constant USD PPPs"},{"1":"HE_ED_XGDP","2":"Experimental development expenditures, higher education, % of GDP"},{"1":"GOVERD","2":"GOVERD (Government intramural expenditure on R&D) (select)"},{"1":"GV","2":"GOVERD (Government intramural expenditure on R&D) (select)"},{"1":"GV_NC","2":"GOVERD, million NC"},{"1":"GV_PPP","2":"GOVERD, million USD PPPs"},{"1":"GV_PPPK","2":"GOVERD, million constant USD PPPs"},{"1":"GV_XG","2":"GOVERD, % of total gross domestic R&D expenditures (GERD)"},{"1":"GV_XGDP","2":"GOVERD, % of GDP"},{"1":"GV_F","2":"GOVERD by source of funding (select)"},{"1":"GV_BEF","2":"Industry funding (select)"},{"1":"GV_BEF_NC","2":"GOVERD, financed by industry, million NC"},{"1":"GV_BEF_PPP","2":"GOVERD, financed by industry, million USD PPPs"},{"1":"GV_BEF_PPPK","2":"GOVERD, financed by industry, million constant USD PPPs"},{"1":"GV_BEF_XGDP","2":"GOVERD, financed by industry, % of GDP"},{"1":"GV_PUBF","2":"Public funding (governement and higher education) (select)"},{"1":"GV_GVF","2":"GOVERD, financed by government (select)"},{"1":"GV_GVF_NC","2":"GOVERD, financed by government, million NC"},{"1":"GV_GVF_PPP","2":"GOVERD, financed by government, million USD PPPs"},{"1":"GV_GVF_XGDP","2":"GOVERD, financed by government, % of GDP"},{"1":"GV_GVF_PPPK","2":"GOVERD, financed by government, million constant USD PPPs"},{"1":"GV_HEF","2":"GOVERD, financed by higher education (select)"},{"1":"GV_HEF_NC","2":"GOVERD, financed by higher education, million NC"},{"1":"GV_HEF_PPP","2":"GOVERD, financed by higher education, million USD PPPs"},{"1":"GV_HEF_PPPK","2":"GOVERD, financed by higher education, million constant USD PPPs"},{"1":"GV_HEF_XGDP","2":"GOVERD, financed by higher education, % of GDP"},{"1":"GV_PUF","2":"GOVERD, financed by public sources (select)"},{"1":"GV_PUBF_PPP","2":"GOVERD, financed by public sources, million USD PPPs"},{"1":"GV_PUBF_PPPK","2":"GOVERD, financed by public sources, million constant USD PPPs"},{"1":"GV_PUBF_XGDP","2":"GOVERD, financed by public sources, % of GDP"},{"1":"GV_PNPF","2":"GOVERD, financed by private non-profit sector (select)"},{"1":"GV_PNPF_NC","2":"GOVERD, financed by private non-profit sector, million NC"},{"1":"GV_PNPF_PPP","2":"GOVERD, financed funded by private non-profit sector, million USD PPPs"},{"1":"GV_PNPF_PPPK","2":"GOVERD, financed by private non-profit sector, million constant USD PPPs"},{"1":"GV_PNPF_XGDP","2":"GOVERD, financed by private non-profit sector, % of GDP"},{"1":"GV_AF","2":"GOVERD, financed by abroad (select)"},{"1":"GV_AF_NC","2":"GOVERD, financed by abroad, million NC"},{"1":"GV_AF_PPP","2":"GOVERD, financed by abroad, million USD PPPs"},{"1":"GV_AF_PPPK","2":"GOVERD, financed by abroad, million constant USD PPPs"},{"1":"GV_AF_XGDP","2":"GOVERD, financed by abroad, % of GDP"},{"1":"GV_TRD","2":"GOVERD by source of funding (select)"},{"1":"GV_BR","2":"Basic research (select)"},{"1":"GV_BR_NC","2":"Basic research expenditures, government, million NC"},{"1":"GV_BR_PPP","2":"Basic research expenditures, government, million USD PPPs"},{"1":"GV_BR_PPPK","2":"Basic research expenditures, government, million constant USD PPPs"},{"1":"GV_BR_XGDP","2":"Basic research expenditures, government, % of GDP"},{"1":"GV_BR_XBR","2":"Basic research expenditures, government, % of  total basic research"},{"1":"GV_AR","2":"Applied research (select)"},{"1":"GV_AR_NC","2":"Applied research expenditures, government, million NC"},{"1":"GV_AR_PPP","2":"Applied research expenditures, government, million USD PPPs"},{"1":"GV_AR_PPPK","2":"Applied research expenditures, government, million constant USD PPPs"},{"1":"GV_AR_XGDP","2":"Applied research expenditures, government, % of GDP"},{"1":"GV_ED","2":"Experimental development (select)"},{"1":"GV_ED_NC","2":"Experimental development expenditures, government, million NC"},{"1":"GV_ED_PPP","2":"Experimental development expenditures, government, million USD PPPs"},{"1":"GV_ED_PPPK","2":"Experimental development expenditures, government, million constant USD PPPs"},{"1":"GV_ED_XGDP","2":"Experimental development expenditures, government, % of GDP"},{"1":"PSERD","2":"PSERD (Public sector expenditure on R&D) (select)"},{"1":"PUB","2":"PSERD (Public sector expenditure on R&D) (select)"},{"1":"PUB_PPP","2":"PSERD, million USD PPPs"},{"1":"PUB_XGDP","2":"PSERD, % of GDP"},{"1":"PUB_XGDP_I","2":"PSERD, performance index (STI Outlook)"},{"1":"PUB_F","2":"PSERD by source of funding (select)"},{"1":"PUB_BE","2":"Industry funding (select)"},{"1":"PUB_BEF_PPP","2":"PSERD, financed by industry, million USD PPPs"},{"1":"PUB_BEF_XPUB","2":"PSERD, financed by industry, % of total PSERD"},{"1":"PUB_BEF_XGDP","2":"PSERD, financed by industry, % of GDP"},{"1":"PUB_BEF_XGDP_I","2":"Industry financed public R&D expenditure, performance index (STI Outlook)"},{"1":"PUB_PUBF","2":"Public funding (government and higher education) (select)"},{"1":"PUB_GVF","2":"PSERD, financed by government (select)"},{"1":"PUB_GVF_PPP","2":"PSERD, financed by government, million USD PPPs"},{"1":"PUB_GVF_XGDP","2":"PSERD, financed by government, % of GDP"},{"1":"PUB_HEF","2":"PSERD, financed by higher education (select)"},{"1":"PUB_HEF_PPP","2":"PSERD, financed by higher education, million USD PPPs"},{"1":"PUB_HEF_XGDP","2":"PSERD, financed by higher education, % of GDP"},{"1":"PUB_PUF","2":"PSERD, financed by public sources (select)"},{"1":"PUB_PUBF_PPP","2":"PSERD, financed by public sources, million USD PPPs"},{"1":"PUB_PUBF_XGDP","2":"PSERD, financed by public sources, % of GDP"},{"1":"PUB_ONF","2":"Other national sources (select)"},{"1":"PUB_ONF_PPP","2":"PSERD, financed by other national sources, million USD PPPs"},{"1":"PUB_AF","2":"Funding from abroad (select)"},{"1":"PUB_AF_PPP","2":"PSERD, financed by abroad, million NC"},{"1":"PUB_TRD","2":"Public R&D expenditure by type of R&D (select)"},{"1":"PUB_BR","2":"Basic research (select)"},{"1":"PUB_BR_NC","2":"Basic research expenditures, public research, million NC"},{"1":"PUB_BR_PPP","2":"Basic research expenditures, public research, million USD PPPs"},{"1":"PUB_BR_XPUB","2":"Basic research expenditures, public research, % of total public R&D"},{"1":"PUB_BR_XGDP","2":"Basic research expenditures, public research, % of GDP"},{"1":"PUB_BR_XBR","2":"Basic research expenditures, public research, % of total basic research"},{"1":"PUB_AR","2":"Applied research (select)"},{"1":"PUB_AR_PPP","2":"Applied research expenditures, public research, million USD PPPs"},{"1":"PUB_AR_XGDP","2":"Applied research expenditures, public research, % of GDP"},{"1":"PUB_ED","2":"Experimental development (select)"},{"1":"PUB_ED_PPP","2":"Experimental development expenditures, public research, million USD PPPs"},{"1":"PUB_ED_XGDP","2":"Experimental development expenditures, public research, % of GDP"},{"1":"PNP","2":"R&D expenditure, private non-profit (select)"},{"1":"PNPERD","2":"Private non-profit expenditure on R&D (select)"},{"1":"PNP_NC","2":"Private non-profit expenditure on R&D, million NC"},{"1":"PNP_PPP","2":"Private non-profit expenditure on R&D, million USD PPPs"},{"1":"PNP_PPPK","2":"Private non-profit expenditure on R&D, million constant USD PPPs"},{"1":"PNP_XG","2":"Private non-profit expenditure on R&D, % of GERD"},{"1":"PNP_XGDP","2":"Private non-profit expenditure on R&D, % of GDP"},{"1":"PNP_BEF","2":"Private non-profit R&D, financed by industry (select)"},{"1":"PNP_BEF_NC","2":"Private non-profit R&D, financed by industry, million NC"},{"1":"PNP_BEF_PPP","2":"Private non-profit R&D, financed by industry, million USD PPPs"},{"1":"PNP_BEF_PPPK","2":"Private non-profit R&D, financed by industry, million constant USD PPPs"},{"1":"PNP_BEF_XG","2":"Private non-profit R&D, financed by industry, % of GERD"},{"1":"PNP_BEF_XGDP","2":"Private non-profit R&D, financed by industry, % of GDP"},{"1":"PNP_GVF","2":"Private non-profit R&D, financed by government (select)"},{"1":"PNP_GVF_NC","2":"Private non-profit R&D, financed by government, million NC"},{"1":"PNP_GVF_PPP","2":"Private non-profit R&D, financed by government, million USD PPPs"},{"1":"PNP_GVF_PPPK","2":"Private non-profit R&D, financed by government, million constant USD PPPs"},{"1":"PNP_GVF_XG","2":"Private non-profit R&D, financed by government, % of GERD"},{"1":"PNP_GVF_XGDP","2":"Private non-profit R&D, financed by government, % of GDP"},{"1":"PNP_HEF","2":"Private non-profit R&D, financed by higher education (select)"},{"1":"PNP_HEF_NC","2":"Private non-profit R&D, financed by higher education, million NC"},{"1":"PNP_HEF_PPP","2":"Private non-profit R&D, financed by higher education, million USD PPPs"},{"1":"PNP_HEF_PPPK","2":"Private non-profit R&D, financed by higher education, million constant USD PPPs"},{"1":"PNP_HEF_XG","2":"Private non-profit R&D, financed by higher education, % of GERD"},{"1":"PNP_HEF_XGDP","2":"Private non-profit R&D, financed by  higher education, % of GDP"},{"1":"PNP_PNPF","2":"Private non-profit R&D, financed by private non-profit sector (select)"},{"1":"PNP_PNPF_NC","2":"Private non-profit R&D, financed by private non-profit sector, million NC"},{"1":"PNP_PNPF_PPP","2":"Private non-profit R&D, financed by private non-profit sector, million USD PPPs"},{"1":"PNP_PNPF_PPPK","2":"Private non-profit R&D, financed by private non-profit sector, million constant USD PPPs"},{"1":"PNP_PNPF_XG","2":"Private non-profit R&D, financed by  private non-profit sector, % of GERD"},{"1":"PNP_PNPF_XGDP","2":"Private non-profit R&D, financed by   private non-profit sector, % of GDP"},{"1":"PNP_AF","2":"Private non-profit R&D, financed by abroad (select)"},{"1":"PNP_AF_NC","2":"Private non-profit R&D, financed by abroad, million NC"},{"1":"PNP_AF_PPP","2":"Private non-profit R&D, financed by abroad, million USD PPPs"},{"1":"PNP_AF_PPPK","2":"Private non-profit R&D, financed by abroad, million constant USD PPPs"},{"1":"PNP_AF_XG","2":"Private non-profit R&D, financed by abroad, % of GERD"},{"1":"PNP_AF_XGDP","2":"Private non-profit R&D, financed by abroad, % of GDP"},{"1":"GBAORD","2":"Public R&D budgets (select)"},{"1":"GB","2":"GBAORD (Government budget appropriations and outlays for R&D) (select)"},{"1":"GB_NC","2":"GBAORD, million NC"},{"1":"GB_PPP","2":"GBAORD, million USD PPPs"},{"1":"GB_PPPK","2":"GBAORD, million constant USD PPPs"},{"1":"GB_XGDP","2":"GBAORD, % of GDP"},{"1":"GB_XGGE","2":"GBAORD, % of general government expenditures"},{"1":"GB_SEO","2":"GBAORD by socio-economic objectives (select)"},{"1":"GB_DEF","2":"Defence (select)"},{"1":"GB_DEF_NC","2":"GBAORD, defence, million NC"},{"1":"GB_DEF_PPP","2":"GBAORD, defence, million USD PPPs"},{"1":"GB_DEF_PPPK","2":"GBAORD, defence, million constant USD PPPs"},{"1":"GB_DEF_XGB","2":"GBAORD, defence, % of total GBAORD"},{"1":"GB_DEF_XGDP","2":"GBAORD, defence, % of GDP"},{"1":"GB_CIV","2":"Civil (select)"},{"1":"GB_CIV_NC","2":"GBAORD, civil, million NC"},{"1":"GB_CIV_PPP","2":"GBAORD, civil, million USD PPPs"},{"1":"GB_CIV_PPPK","2":"GBAORD, civil, million constant USD PPPs"},{"1":"GB_CIV_XGB","2":"GBAORD, civil, % of total GBAORD"},{"1":"GB_CIV_XGDP","2":"GBAORD, civil, % of GDP"},{"1":"GB_NOR","2":"Non-oriented research (Civil) (select)"},{"1":"GB_NOR_NC","2":"GBAORD, non-oriented research, million NC"},{"1":"GB_NOR_PPP","2":"GBAORD, non-oriented research, million USD PPPs"},{"1":"GB_NOR_PPPK","2":"GBAORD, non-oriented research, million constant USD PPPs"},{"1":"GB_NOR_XGB","2":"GBAORD, non-oriented research, % of total GBAORD"},{"1":"GB_NOR_XGDP","2":"GBAORD, non-oriented research, % of GDP"},{"1":"GB_GEN_XGBCIV","2":"GBAORD, generic research, % of total civil GBAORD"},{"1":"GB_THM","2":"Thematic research (Civil) (select)"},{"1":"GB_TOT","2":"Total (select)"},{"1":"GB_TOT_NC","2":"GBAORD, total thematic, million NC"},{"1":"GB_TOT_PPP","2":"GBAORD, total thematic, million USD PPPs"},{"1":"GB_TOT_PPPK","2":"GBAORD, total thematic, million constant USD PPPs"},{"1":"GB_TOT_XGB","2":"GBAORD, total thematic, % of total GBAORD"},{"1":"GB_TOT_XGDP","2":"GBAORD, total thematic, % of GDP"},{"1":"GB_SPA","2":"Space (select)"},{"1":"GB_SPA_NC","2":"GBAORD, space, million NC"},{"1":"GB_SPA_PPP","2":"GBAORD, space, million USD PPPs"},{"1":"GB_SPA_PPPK","2":"GBAORD, space, million constant USD PPPs"},{"1":"GB_SPA_XGB","2":"GBAORD, space, % of total GBAORD"},{"1":"GB_SPA_XGDP","2":"GBAORD, space, % of GDP"},{"1":"GB_EAR","2":"Earth (select)"},{"1":"GB_EAR_NC","2":"GBAORD, earth, million NC"},{"1":"GB_EAR_PPP","2":"GBAORD, earth, million USD PPPs"},{"1":"GB_EAR_PPPK","2":"GBAORD, earth, million constant USD PPPs"},{"1":"GB_EAR_XGB","2":"GBAORD, earth, % of total GBAORD"},{"1":"GB_EAR_XGDP","2":"GBAORD, earth, % of GDP"},{"1":"GB_ENE","2":"Energy (select)"},{"1":"GB_ENE_NC","2":"GBAORD, energy, million NC"},{"1":"GB_ENE_PPP","2":"GBAORD, energy, million USD PPPs"},{"1":"GB_ENE_PPPK","2":"GBAORD, energy, million constant USD PPPs"},{"1":"GB_ENE_XGB","2":"GBAORD, energy, % of total GBAORD"},{"1":"GB_ENE_XGDP","2":"GBAORD, energy, % of GDP"},{"1":"GB_ENV","2":"Environment (select)"},{"1":"GB_ENV_NC","2":"GBAORD, environment, million NC"},{"1":"GB_ENV_PPP","2":"GBAORD, environment, million USD PPPs"},{"1":"GB_ENV_PPPK","2":"GBAORD, environment, million constant USD PPPs"},{"1":"GB_ENV_XGB","2":"GBAORD, environment, % of total GBAORD"},{"1":"GB_ENV_XGDP","2":"GBAORD, environment, % of GDP"},{"1":"GB_AGR","2":"Agriculture (select)"},{"1":"GB_AGR_NC","2":"GBAORD, agriculture, million NC"},{"1":"GB_AGR_PPP","2":"GBAORD, agriculture, million USD PPPs"},{"1":"GB_AGR_PPPK","2":"GBAORD, agriculture, million constant USD PPPs"},{"1":"GB_AGR_XGB","2":"GBAORD, agriculture, % of total GBAORD"},{"1":"GB_AGR_XGDP","2":"GBAORD, agriculture, % of GDP"},{"1":"GB_HEA","2":"Health (select)"},{"1":"GB_HEA_NC","2":"GBAORD, health, million NC"},{"1":"GB_HEA_PPP","2":"GBAORD, health, million USD PPPs"},{"1":"GB_HEA_PPPK","2":"GBAORD, health, million constant USD PPPs"},{"1":"GB_HEA_XGB","2":"GBAORD, health, % of total GBAORD"},{"1":"GB_HEA_XGDP","2":"GBAORD, health, % of GDP"},{"1":"GB_TEL","2":"Telecom and infrastructures (select)"},{"1":"GB_TEL_NC","2":"GBAORD, telecom and infrastructures, million NC"},{"1":"GB_TEL_PPP","2":"GBAORD, telecom and infrastructures, million USD PPPs"},{"1":"GB_TEL_PPPK","2":"GBAORD, telecom and infrastructures, million constant USD PPPs"},{"1":"GB_TEL_XGB","2":"GBAORD, telecom and infrastructures, % of total GBAORD"},{"1":"GB_TEL_XGDP","2":"GBAORD, telecom and infrastructures, % of GDP"},{"1":"GB_IND","2":"Industrial production (select)"},{"1":"GB_IND_NC","2":"GBAORD, industrial production, million NC"},{"1":"GB_IND_PPP","2":"GBAORD, industrial production, million USD PPPs"},{"1":"GB_IND_PPPK","2":"GBAORD, industrial production, million constant USD PPPs"},{"1":"GB_IND_XGB","2":"GBAORD, industrial production, % of total GBAORD"},{"1":"GB_IND_XGDP","2":"GBAORD, industrial production, % of GDP"},{"1":"GBAALL","2":"Public R&D budgets by allocation mechanism (select)"},{"1":"IBF_XTFNP","2":"Institutional block funding, % of total funding to national performers"},{"1":"RDDBET","2":"Research, Development and Demonstrators (RD&D) budgets for energy Technology (select)"},{"1":"RDDB","2":"RD&D budgets (select)"},{"1":"RDDB_NC","2":"Total RD&D, million NC"},{"1":"RDDB_PPP","2":"Total RD&D, million USD PPPs"},{"1":"DEMB","2":"Demonstrators budgets (select)"},{"1":"DEMB_NC","2":"Demonstration, million NC"},{"1":"DEMB_PPP","2":"Demonstration, million USD PPPs"},{"1":"DEMB_PPPK","2":"Demonstration, million constant USD PPPs"},{"1":"INNEXP","2":"Innovation-related expenditure (select)"},{"1":"INVASS","2":"Investments on tangible and intangible assets (select)"},{"1":"GFCF","2":"GFCF (Gross Fixed Capital Formation) (select)"},{"1":"GFCF_PPP","2":"GFCF, million USD PPPs"},{"1":"GFCF_PPPK","2":"GFCF, million constant USD PPPs"},{"1":"GFCF_XGDP","2":"GFCF, % of GDP"},{"1":"INTANG","2":"Investments on intangible fixed assets (select)"},{"1":"INTANG_XGDP","2":"Investments on intangible fixed assets, % of GDP"},{"1":"ICTINV","2":"ICT investments (select)"},{"1":"ICTINV_XGFCF","2":"ICT investments, total, % of gross fixed capital formation (GFCF)"},{"1":"ICTINV_XGDP","2":"ICT investments, total, % of GDP"},{"1":"ICTINV_XGDP_I","2":"ICT investment, performance index (STI Outlook)"},{"1":"ICTINV_ME_XGDP","2":"ICT investments, machinery and equipment, % of GDP"},{"1":"ICTINV_SF_XGFCF","2":"ICT investments, software, % of gross fixed capital formation (GFCF)"},{"1":"ICTINV_SF_XGDP","2":"ICT investments, software, % of GDP"},{"1":"EDU","2":"Education expenditure (select)"},{"1":"E","2":"All education levels (select)"},{"1":"ETF","2":"Total funding (select)"},{"1":"E_PPP","2":"Education expenditure, total, million USD PPPs"},{"1":"E_XGDP","2":"Education expenditure, total, % of GDP"},{"1":"EPF","2":"Public funding (select)"},{"1":"E_GVF_PPP","2":"Education expenditure, financed by government, million USD PPPs"},{"1":"E_GVF_XGDP","2":"Education expenditure, financed by government, % of GDP"},{"1":"E_TER","2":"Higher education (tertiary level) (select)"},{"1":"TER_F","2":"Total funding (select)"},{"1":"TER_NC","2":"Tertiary education expenditure, million NC"},{"1":"TER_PPP","2":"Tertiary education expenditure, million USD PPPs"},{"1":"TER_PPPK","2":"Tertiary education expenditure, million constant USD PPPs"},{"1":"TER_XGDP","2":"Tertiary education expenditure, % of GDP"},{"1":"TER_XGDP_I","2":"Tertiary education expenditure, performance index (STI Outlook)"},{"1":"TER_PUBF","2":"Public funding (select)"},{"1":"TER_GVF_NC","2":"Tertiary education expenditure, financed by government, million NC"},{"1":"TER_GVF_PPP","2":"Tertiary education expenditure, financed by government, million USD PPPs"},{"1":"TER_GVF_XGDP","2":"Tertiary education expenditure, financed by government, % of GDP"},{"1":"TER_GVF_XGGE","2":"Tertiary education expenditure, financed by government, % of general government expenditure"},{"1":"EDUHR","2":"Education and human resources (select)"},{"1":"EOUT","2":"Education outcomes (select)"},{"1":"EATTPOP","2":"Population educational attainment (select)"},{"1":"ADTERPOP_XT","2":"Adult population at tertiary education level, % total"},{"1":"ADTERPOP_XT_I","2":"Adult population at tertiary education level, performance index (STI Outlook)"},{"1":"TOP15PERF","2":"Top performers at 15 (select)"},{"1":"TOP15_SCI_XT","2":"Top performers in science among 15-year olds, % total"},{"1":"TOP15_SCI_XT_I","2":"Top 15 year-old performers in science, performance index (STI Outlook)"},{"1":"TOP15_MATH_XT","2":"Top performers in mathematics among 15-year olds, % total"},{"1":"TOP15_READ_XT","2":"Top performers in reading among 15-year olds, % total"},{"1":"TOPADPERF","2":"Top adult performers (select)"},{"1":"TOPAD_LIT_XAD","2":"Top adult performers in literacy , % of 16-65 year-old adults"},{"1":"TOPAD_NUM_XAD","2":"Top adult performers in numeracy, % of 16-65 year-old adults"},{"1":"TOPAD_PST_XAD","2":"Top adult performers in problem solving in technology-rich environments, % of 16-65-year-old adults"},{"1":"TOPAD_PST_XAD_I","2":"Top adult performers in technology problem solving, performance index (STI Outlook)"},{"1":"TERGRAD","2":"Tertiary education graduation (select)"},{"1":"UNIVG_TERABARP","2":"University graduates (ISCED2011 levels 5 to 8) all educational programmes (select)"},{"1":"UNIVG_TERABARP_NB","2":"University graduates (ISCED2011 levels 5 to 8) all educational program, number"},{"1":"WUNIVG_TERABARP_NB","2":"Women university graduates (ISCED2011 levels 5 to 8) all educational program, number"},{"1":"WUNIVG_TERABARP_XT","2":"Women university graduates (ISCED2011 levels 5 to 8) all educational program, % total"},{"1":"UNIVG_TERARP","2":"University graduates, (ISCED2011 levels 6 to 8) general/ academic programmes, all fields (select)"},{"1":"UGTARP_NB","2":"University graduates, (ISCED2011 levels 6 to 8) general/ academic programmes, number"},{"1":"WUGTARP_NB","2":"Women university graduates, (ISCED2011 levels 6 to 8) general/ academic programmes, number"},{"1":"WUGTARP_XT","2":"Women university graduates, % of total"},{"1":"UGTARP_SCIENG","2":"University graduates,(ISCED2011 levels 6 to 8) general/ academic programmes, science and engineering (select)"},{"1":"UGTARP_SCI_NB","2":"University graduates, (ISCED2011 levels 6 to 8) general/ academic programmes, science, number"},{"1":"UGTARP_ENG_NB","2":"University graduates,(ISCED2011 levels 6 to 8) general/ academic programmes, engineering, number"},{"1":"WUGTARP_SCI_NB","2":"Women university graduates, (ISCED2011 levels 6 to 8) general/ academic programmes, science, number"},{"1":"WUGTARP_ENG_NB","2":"Women university graduates,  (ISCED2011 levels 6 to 8) general/ academic programmes, engineering, number"},{"1":"WUGTARP_SCIENG_XT","2":"Women university graduates, (ISCED2011 levels 6 to 8) general/ academic programmes, science and engineering, % of total"},{"1":"UNIVG_TERA","2":"University graduates,(ISCED2011 levels 6 to 7), general / academic programmes, all fields (select)"},{"1":"WUGTA_NB","2":"Women university graduates, (ISCED2011 levels 6 to 7), general / academic programmes, number"},{"1":"WUGTA_XT","2":"Women university graduates, % of total"},{"1":"UGTA_SCIENG","2":"University graduates,(ISCED2011 levels 6 to 7), general / academic programmes, science and engineering (select)"},{"1":"UGTA_SCI_NB","2":"University graduates,(ISCED2011 levels 6 to 7), science, number"},{"1":"UGTA_ENG_NB","2":"University graduates, (ISCED2011 levels 6 to 7), engineering, number"},{"1":"WUGTA_SCI_NB","2":"Women university graduates, (ISCED2011 levels 6 to 7), science, number"},{"1":"WUGTA_ENG_NB","2":"Women university graduates, (ISCED2011 levels 6 to 7), engineering, number"},{"1":"PHD","2":"Doctorate graduates (ISCED2011 level 8), all fields (select)"},{"1":"PHD_NB","2":"Doctorate graduates,(ISCED2011 level 8) number"},{"1":"WPHD_NB","2":"Women doctorate graduates (ISCED2011 level 8), number"},{"1":"WPHD_XT","2":"Women doctorate graduates (ISCED2011 level 8), % of total"},{"1":"PHD_SCIENG","2":"Doctorate graduates (ISCED2011 level 8), science and engineering (select)"},{"1":"PHD_SCI_NB","2":"Doctorate graduates,(ISCED2011 level 8),  science, number"},{"1":"PHD_ENG_NB","2":"Doctorate graduates, (ISCED2011 level 8), engineering, number"},{"1":"PHDR_SCIENG_XCOH_I","2":"Doctoral graduate rate in science and engineering, performance index (STI Outlook)"},{"1":"WPHD_ENG_NB","2":"Women doctorate graduates,(ISCED2011 level 8),  engineering, number"},{"1":"WPHD_SCI_NB","2":"Women doctorate graduates,(ISCED2011 level 8),  science, number"},{"1":"FORSTHE","2":"International/foreign students in higher education (tertiary level- ISCED2011 levels 5 to 8) (select)"},{"1":"FORSUNI","2":"International/foreign students at university/tertiary level (ISCED2011 levels 5 to 8) (select)"},{"1":"TENR_NB","2":"Total enrolment at tertiary level (ISCED2011 levels 5 to 8), number"},{"1":"FORSUNI_NB","2":"International/foreign students at tertiary level (ISCED2011 levels 5 to 8), number"},{"1":"FORSUNI_XTENR","2":"International/foreign students at tertiary level (ISCED2011 levels 5 to 8), % total enrolment at tertiary-level"},{"1":"FORSPHD","2":"International/foreign students at doctoral level (ISCED2011 level 8) (select)"},{"1":"FORSPHD_NB","2":"International/foreign students at doctoral level (ISCED2011 level 8), number"},{"1":"FORSPHD_XPHDENR","2":"International/foreign students at doctoral level (ISCED2011 level 8), % total enrolment at doctorate level"},{"1":"RDPERS","2":"Researchers and R&D personnel (select)"},{"1":"RDRSE","2":"Researchers (select)"},{"1":"RSE_FTE","2":"Researchers, FTE"},{"1":"RSE_HC","2":"Researchers, headcount"},{"1":"RSE_EMP","2":"Researchers, per thousand employment"},{"1":"WRSE_HC","2":"Women researchers, headcount"},{"1":"WRSE_XRSE","2":"Women researchers, % of total researchers"},{"1":"GLASCEIL_I","2":"Women, glass ceiling index"},{"1":"RSE_PUB_HC_XT","2":"Researchers employed in the public sector, headcount,  % total"},{"1":"RDPERSO","2":"R&D personnel (select)"},{"1":"RDPERS_FTE","2":"R&D personnel, FTE"},{"1":"RDPERS_EMP","2":"R&D personnel, per thousand total employment"},{"1":"IMSA","2":"International scientific authors (select)"},{"1":"IMSA_XT","2":"Internationally mobile scientific authors, % of total"},{"1":"IMSANI_XSA","2":"Internationally mobile scientific authors, new incomers, % of total scientific authors"},{"1":"IMSAR_XSA","2":"Internationally mobile scientific authors, returnees, % of total scientific authors"},{"1":"ICT","2":"ICT and Internet (select)"},{"1":"ICTNET","2":"ICT network (select)"},{"1":"BBAND","2":"Broadband (select)"},{"1":"FBBAND_NB","2":"Fixed broadband subscribers, million"},{"1":"FBBAND_HAB","2":"Fixed broadband subscribers, per 100 inhabitants"},{"1":"FBBAND_HAB_I","2":"Fixed broadband subscribers, performance index (STI Outlook)"},{"1":"WBBAND_NB","2":"Wireless broadband subscribers, million"},{"1":"WBBAND_HAB","2":"Wireless broadband subscribers, per 100 inhabitants"},{"1":"WBBAND_HAB_I","2":"Wireless broadband subscribers, performance index (STI Outlook)"},{"1":"CYBSEC","2":"Cybersecurity (select)"},{"1":"SERVERS_HAB","2":"Secure servers, per 100 thousand inhabitants"},{"1":"ICTUSE","2":"ICT use and deployment (select)"},{"1":"INTERNET","2":"Internet (select)"},{"1":"INTUSERS_HAB","2":"Internet users, per 100 inhabitants"},{"1":"INTUSERS1624_XT","2":"Internet users,16-24 , % 16-24 years old population"},{"1":"INTUSERS6574_XT","2":"Internet users by age, 65-74, % 65-74 years old population"},{"1":"BUSINESS","2":"Business (select)"},{"1":"CLOUDSMALL_XT","2":"Small enterprises using cloud computing services, % small enterprises"},{"1":"CLOUDMED_XT","2":"Medium enterprises using cloud computing services, % medium enterprises"},{"1":"CLOUDLGE_XT","2":"Large enterprises using cloud computing services, % large enterprises"},{"1":"GOVT","2":"Government and administration (select)"},{"1":"EGOV_I","2":"E-government development index"},{"1":"EGOV_I_I","2":"E-government readiness, performance index (STI Outlook)"},{"1":"FINMKT","2":"Financial markets (select)"},{"1":"FINDEBT","2":"Debt financing (select)"},{"1":"FNLN","2":"Loans (select)"},{"1":"SMELN_XL","2":"SME loans, % in total business loans"},{"1":"FINEQF","2":"Equity financing (select)"},{"1":"FNVC","2":"Venture capital (select)"},{"1":"FNVCINV","2":"Venture capital investments (select)"},{"1":"VC_USD","2":"Venture capital, millions USD"},{"1":"VC_XGDP","2":"Venture capital, % of GDP"},{"1":"VC_XGDP_I","2":"Venture capital, performance index (STI Outlook)"},{"1":"REGU","2":"Legal and regulatory business environment (select)"},{"1":"PMR","2":"Product market regulation index (PMR)(select)"},{"1":"STC_I","2":"PMR - State control"},{"1":"POW_I","2":"PMR - State control, Public ownership"},{"1":"IBO_I","2":"PMR - State control, Involvement in business operation"},{"1":"BTE_I","2":"PMR - Barriers to entrepreneurship"},{"1":"RAO_I","2":"PMR - Barriers to entrepreneurship, Complexity of regulatory procedures"},{"1":"ABS_I","2":"PMR - Barriers to entrepreneurship, Administrative burdens on startups"},{"1":"BTC_I","2":"PMR - Barriers to entrepreneurship, Regulatory protection of incumbents"},{"1":"BTI_I","2":"PMR - Barriers to trade and investment"},{"1":"XBR_I","2":"PMR - Barriers to trade and investment, Explicit barriers"},{"1":"OBR_I","2":"PMR - Barriers to trade and investment, Other barriers"},{"1":"EASE_I","2":"PMR - Ease of entrepreneurship index"},{"1":"EASE_I_I","2":"Ease of entrepreneurship, performance index (STI Outlook)"},{"1":"EPLIDX","2":"Employment protection legislation index (EPL) (select)"},{"1":"EPLDSMI_I","2":"EPL - Strictness of employment protection – individual dismissals (regular contracts)"},{"1":"EPLDSMC_I","2":"EPL - Strictness of employment protection – collective dismissals (regular contracts)"},{"1":"EPLTMP_I","2":"EPL - Strictness of employment protection – temporary contracts"},{"1":"STIACT","2":"Science, Technology and Innovation actors (select)"},{"1":"UNIPRI","2":"Top universities and Public Research Institutes (PRIs) (select)"},{"1":"TOPUNI","2":"Top universities (select)"},{"1":"TOPUNI500","2":"Top universities 20-500 (select)"},{"1":"UNI20_NB","2":"Top 20 universities, number"},{"1":"UNI100_NB","2":"Top 100 universities, number"},{"1":"UNI200_NB","2":"Top 200 universities, number"},{"1":"UNI500_NB","2":"Top 500 universities, number"},{"1":"UNI500_HAB","2":"Top 500 universities, per million population"},{"1":"UNI500_GDP","2":"Top 500 universities, per GDP billion USD PPPs"},{"1":"UNI500_GDP_I","2":"Top 500 universities, performance index (STI Outlook)"},{"1":"TPRDCRP","2":"Top world corporate R&D investors (select)"},{"1":"TP500","2":"Top 500 (select)"},{"1":"CORPRD500_NB","2":"Top 500 corporate R&D investors, number"},{"1":"CORPRD500_HAB","2":"Top 500 corporate R&D investors per million population"},{"1":"CORPRD500_GDP","2":"Top 500 corporate R&D investors, per GDP USD PPPs"},{"1":"CORPRD500_GDP_I","2":"Top 500 corporate R&D investors, performance index (STI Outlook)"},{"1":"MLTNATL","2":"Multinationals (select)"},{"1":"RDFRAFL","2":"R&D expenditure of foreign affiliates (select)"},{"1":"RDFRMLT","2":"Foreign multinationals (select)"},{"1":"RDFR_NC","2":"R&D expenditures of foreign affiliates, million NC"},{"1":"AFA_XBE","2":"R&D expenditures of foreign affiliates, % of total R&D expenditure of enterprises"},{"1":"RDFR_XGDP","2":"R&D expenditures of foreign affiliates, % of GDP"},{"1":"RDDMMLT","2":"Domestic multinationals (select)"},{"1":"RDDM_NC","2":"R&D expenditures of domestic firms outward, million NC"},{"1":"RDDM_XBE","2":"R&D expenditures of domestic firms outward, % of total R&D expenditure of enterprises"},{"1":"RDDM_XGDP","2":"R&D expenditures of domestic firms outward, % of GDP"},{"1":"CRSBDPT","2":"Cross-border ownership of patents (Patent Cooperation Treaty)"},{"1":"FROPT_NB","2":"Foreign ownership of patents, number of PCT patent applications"},{"1":"FROPT_XPCT","2":"Foreign ownership of patents, % of all PCT patent applications"},{"1":"DMOPT_NB","2":"Domestic ownership of patents invented or co-invented abroad, number of PCT patent applications"},{"1":"DMOPT_XRES","2":"Domestic ownership of patents invented or co-invented abroad, % of PCT patent applications by residents"},{"1":"CLLBINNO","2":"Innovative firms (select)"},{"1":"YPATFRM","2":"Young patenting firms (select)"},{"1":"PTYG_GDP","2":"Young patenting firms, per billion USD PPPs GDP"},{"1":"PTYG_XGDP","2":"Young patenting firms, per billion USD PPPs GDP"},{"1":"PTYG_XGDP_I","2":"Young patenting firms, performance index (STI Outlook)"},{"1":"STOUTPUT","2":"S&T and non S&T output (select)"},{"1":"PBLCTN","2":"Publications (select)"},{"1":"SCPB","2":"Scientific publications (select)"},{"1":"PUBS_XTOP","2":"Scientific publication output among world's 10% most cited documents"},{"1":"SCPBQL","2":"Quality of scientific publications (select)"},{"1":"PUB25_GDP_I","2":"Publications in the top-quartile journals, performance index (STI Outlook)"},{"1":"INTCOA_XSA_I","2":"International co-authorship, performance index (STI Outlook)"},{"1":"PATENTS","2":"Patents (select)"},{"1":"TRIPATFM","2":"Triadic patent families (select)"},{"1":"PTRIAD_NB","2":"Triadic patent families, number"},{"1":"PTRIAD_GDP","2":"Triadic patent families, per GDP billion USD PPPs"},{"1":"PTRIAD_GDP_I","2":"Triadic patent families, performance index (STI Outlook)"},{"1":"PTRIAD_XW","2":"Triadic patent families, world share, %"},{"1":"PTPCT","2":"Patents filed under the Patent Cooperation Treaty (PCT) (select)"},{"1":"PATS_NB","2":"PCT patents, number of applications"},{"1":"PTPCTPRI","2":"PCT patents by Public Research Institutes (PRIs) (select)"},{"1":"PATPRI_XIP5","2":"IP5  patents families filed by universities and PRIs, % of all IP5  patents families applications"},{"1":"PATPRIBIO_XIP5BIO","2":"IP5  patents families filed by universities and PRIs in biotechnology, % of all IP5  patents families applications"},{"1":"PATPRINNO_XIP5NNO","2":"IP5  patents families filed by universities and PRIs in nanotechnology, % of all IP5  patents families applications"},{"1":"PATPRIENV_XIP5ENV","2":"IP5  patents families filed by universities and PRIs in environment related technologies, % of all IP5  patents families applications"},{"1":"PATPRIICT_XIP5ICT","2":"IP5  patents families filed by universities and PRIs in ICT, % of all IP5  patents families applications"},{"1":"RTA","2":"Revealed Technology advantage (RTA) (select)"},{"1":"RTABIO_I","2":"RTA in biotechnologies"},{"1":"RTAICT_I","2":"RTA in ICT"},{"1":"RTAENV_I","2":"RTA in environment-related technologies"},{"1":"COPAT_XIP5","2":"International co-invention, % of total ip5 patent applications"},{"1":"COPAT_XIP5_I","2":"International co-invention, performance index (STI Outlook)"},{"1":"TRDMKDS","2":"Trademarks and designs (select)"},{"1":"TRDMRK","2":"Trademarks (select)"},{"1":"TRDMRK_GDP","2":"Trademarks abroad, per GDP billion USD PPPs"},{"1":"TRDMRK_GDP_I","2":"Trademarks, performance index (STI Outlook)"},{"1":"ECONIMP","2":"Economic impact (select)"},{"1":"BUSDMG","2":"Business demography and dynamism (select)"},{"1":"FRMCRTN","2":"Firms creation and destruction (select)"},{"1":"EMPENTBR_NB","2":"Employer enterprise births, number (total industry and market services)"},{"1":"EMPENTRBR_XB1","2":"Employer enterprise birth rate, total economy, % of active enterprises with at least one employee"},{"1":"EMPENTDT_NB","2":"Employer enterprise deaths, number"},{"1":"EMPENTDTRT_XB1","2":"Employer enterprise death rate, % of % of active enterprises with at least one employee"},{"1":"MCRECOPF","2":"Macroeconomic performance (select)"},{"1":"ECOGWTH","2":"Economic growth (select)"},{"1":"GDP_NC","2":"GDP, million NC"},{"1":"GDP_PPP","2":"GDP, million USD PPP"},{"1":"GDP_PPPK","2":"GDP, million constant USD PPPs"},{"1":"GDP_GRO","2":"GDP, annual growth rate at constant prices, %"},{"1":"GDP_HAB_PPP","2":"GDP per capita, USD PPPs"},{"1":"GDP_HAB_PPPK","2":"GDP per capita, constant USD PPPs"},{"1":"LABPROD","2":"Labour productivity (select)"},{"1":"PDYC_PPP","2":"Labour productivity, GDP per hour worked, USD PPPs"},{"1":"PDYC_PPPK","2":"Labour productivity, GDP per hour worked, constant USD PPPs"},{"1":"PDYC_GRO","2":"Labour productivity, annual growth rate at constant prices, %"},{"1":"PDYC_I","2":"Labour productivity, GDP per hour worked, index 2005=100"},{"1":"TRDCOMP","2":"International trade and competitiveness (select)"},{"1":"TRDGVC","2":"Trade in global value chains (select)"},{"1":"TRDVAFR","2":"Value-added by foreign industries (select)"},{"1":"FRVAEXP_XEXP","2":"Foreign value-added in exports, % of total gross exports"},{"1":"GLOBAL","2":"Impact on global challenges (select)"},{"1":"GLBENV","2":"Environment and natural resources (select)"},{"1":"GLBCLMCH","2":"Environment and climate change (select)"},{"1":"CO2GDP_PPPK","2":"Environmental productivity,unit of CO2 emitted per GDP,2005 constant USD PPPs"},{"1":"GDPCO2_GRO","2":"Environmental productivity, GDP per unit of CO2 emitted, annual growth rate at constant prices, %"},{"1":"GDPCO2_I","2":"Environmental productivity, GDP per unit of CO2 emitted, index 2005=100"},{"1":"ENVPDNNI_GRO","2":"Environmental productivity, NNI per unit of CO2 emitted, annual growth rate at constant prices, %"},{"1":"ENVPDNNI_PPP","2":"Environmental productivity, NNI per unit of CO2 emitted, USD PPPs"},{"1":"DMGPOP","2":"Demography, labour and society (select)"},{"1":"DMG","2":"Demography (select)"},{"1":"POPULATION","2":"Population (select)"},{"1":"POP_NB","2":"Population, total"},{"1":"POP1564_NB","2":"Population, working age"},{"1":"POPF1564_NB","2":"Population, women, working age"},{"1":"AGE","2":"Ageing and dependency (select)"},{"1":"AGEPOP_MEDIAN","2":"Median age population"},{"1":"POPY65_NB","2":"Population, 65+"},{"1":"POPY65_XPOP","2":"Population, 65+, % of total"},{"1":"POPY80_NB","2":"Population, 80+"},{"1":"POPY80_XPOP","2":"Population, 80+, % of total"},{"1":"POPY15_NB","2":"Population, <15"},{"1":"POPY15_XPOP","2":"Population, <15, % total"},{"1":"POPDEP_X","2":"Population, dependent"},{"1":"DEP_X1564","2":"Dependency ratio, % of working age population"},{"1":"ODEP_X1564","2":"Old-age dependency ratio, % of working age population"},{"1":"YDEP_X1564","2":"Youth dependency ratio, % of working age population"},{"1":"LAB_EMP","2":"Labour force and employment (select)"},{"1":"LF","2":"Labour force (select)"},{"1":"LF_NB","2":"Labour force, civilian"},{"1":"LF1524_NB","2":"Labour force, civilian, 15-24, thousand"},{"1":"EMP","2":"Employment (select)"},{"1":"EMP_NB","2":"Employment, total"},{"1":"EMP_X1564","2":"Employment rate, % of working-age population"},{"1":"EMPF1564_X1564F","2":"Employment rate, women, % women in working-age population"},{"1":"EMPV_XEMP","2":"Vulnerable employment, % of total employment"},{"1":"EMPVF_XEMF","2":"Vulnerable employment, women, % of women in employment"},{"1":"UNEMPLOY","2":"Unemployment (select)"},{"1":"UNEMP_NB","2":"Unemployed persons, thousand"},{"1":"UNEMP_XLF","2":"Unemployment rate, % civilian of labour force"},{"1":"UNEMPF_XLFF","2":"Unemployment rate, women, % civilian of labour force"},{"1":"UNEMP1524_XLF","2":"Youth unemployment rate, 15-24, % of civilian labour force"},{"1":"SOC","2":"Society (select)"},{"1":"GWTINCL","2":"Growth and social inclusion (select)"},{"1":"GINIDSP_GINI","2":"Gini coefficient at disposable income, post taxes and transfers (income inequality)"},{"1":"INCGAP12","2":"Income gap between the 10% richest and poorest 10%, disposable income - Method 2012"},{"1":"INCGAP11","2":"Ratio top decile/first decile of real household net disposable income - Method 2011"},{"1":"PVRTTX_X","2":"Poor population, after taxes and transfers, % total population (poverty rate)"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="section-select-indicators-download" class="section level3">
+<h3>Select Indicators &amp; download</h3>
+<p>We will focus on a selection of indicators (not encessarily the best, just a quick selection of potentially relevant ones).</p>
+<pre class="r"><code>vars &lt;- c(&quot;GDP_PPPK&quot;, &quot;GDP_HAB_PPPK&quot;, &quot;GDP_GRO&quot;, &quot;POP_NB&quot;, &quot;G_XGDP&quot;, &quot;BE_XGDP&quot;, &quot;GV_XGDP&quot;, &quot;RDPERS_EMP&quot;, &quot;PTRIAD_GDP&quot;, &quot;UNI500_HAB&quot;)</code></pre>
+<p>I here provide you a selection of different types iof indicators, related to:</p>
+<ul>
+<li>General population, size of the economy, and growth (<code>POP_NB, GDP_PPPK, GDP_GRO</code>)</li>
+<li>Inputs: STI investments (<code>G_XGDP, BE_XGDP, GV_XGDP</code>)</li>
+<li>Throughputs: R&amp;D personal and top universities (<code>RDPERS_EMP, UNI500_HAB</code>)</li>
+<li>Output: Patents (<code>PTRIAD_GDP</code>)</li>
+</ul>
+<p>Note that we only pick relative and not absolute indicators, which ease international comparison between countries of varying size.</p>
+</div>
+<div id="section-section-3" class="section level3">
+<h3></h3>
+<p>We now in real-time download the data with the <code>get_dataset</code> function.</p>
+<pre class="r"><code>data_raw &lt;- OECD::get_dataset(dataset = &quot;STIO_2016&quot;, filter = list (dstruc$COUNTRY$id, vars))
+# saveRDS(data_raw, &quot;data_raw.RDS&quot;) # in case we want to save it and not always download it again</code></pre>
+<div class="tutorial-exercise-support" data-label="data_raw" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+data_raw &lt;- OECD::get_dataset(dataset = &quot;STIO_2016&quot;, filter = list (dstruc$COUNTRY$id, vars))</code></pre>
+</div>
+</div>
+<div id="section-section-4" class="section level3">
+<h3></h3>
+<p>Lets see what we got</p>
+<div class="tutorial-exercise" data-label="data_raw_show" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_raw %&gt;% head()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_raw","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-data-prepereation" class="section level2">
+<h2>Data Prepereation</h2>
+<p>Before we dive into the analysis, we need to do a bit of data cleaning and munginging. Withn this type of macro data we usually have some or all of the following problems (for OECD but also WorldBank, EuroStats etc.):</p>
+<ol style="list-style-type: decimal">
+<li>Confusing or unintuitive variable names</li>
+<li>Variable type and formatting issues</li>
+<li>Country name issues</li>
+<li>Data Structure (long vs. wide)</li>
+<li>Missing data</li>
+</ol>
+<div id="section-fomating-variable-names" class="section level3">
+<h3>Fomating &amp; variable names</h3>
+<p>Here a very brief first renaming and formating. In detail, we do:</p>
+<ul>
+<li>Deselect variables we do not need</li>
+<li>Dename some for convenience</li>
+<li>Change the format of <code>year</code> from <code>character</code> to <code>numeric</code></li>
+<li>Sort the data</li>
+</ul>
+<pre class="r"><code>data &lt;- data_raw %&gt;%
+  select(-TIME_FORMAT, -OBS_STATUS) %&gt;%
+  rename(ctry.iso3 = COUNTRY,
+         indicator = INDICATOR,
+         year = obsTime,
+         value = obsValue) %&gt;%
+  mutate(year = year %&gt;% as.numeric()) %&gt;%  
+  arrange(ctry.iso3, indicator, year) </code></pre>
+</div>
+<div id="section-country-names" class="section level3">
+<h3>Country Names</h3>
+<ul>
+<li><strong>Note:</strong> The country here is coded in <code>iso3</code> format.</li>
+<li>I will here use the functionality of the <code>countrycode</code> packag (might need install)</li>
+<li>Note the <code>%&lt;&gt;%</code> pipe from the <code>magrittr</code> package, which assigns and executes jointly (<code>x &lt;- x %&gt;% ... == x %&lt;&gt;%...</code>)</li>
+</ul>
+<pre class="r"><code>data %&lt;&gt;% 
+  mutate(ctry.name = ctry.iso3 %&gt;% countrycode::countrycode(&quot;iso3c&quot;, &quot;country.name&quot;)) </code></pre>
+</div>
+<div id="section-section-5" class="section level3">
+<h3></h3>
+<p>We will later also do summaries ofer 5 year time frames. Therefore I here already define a variable <code>period</code>.</p>
+<pre class="r"><code>data %&lt;&gt;% 
+  group_by(ctry.iso3, indicator) %&gt;%
+  mutate(value = if_else(is.na(value), lag(value), value) ) %&gt;%
+  ungroup() %&gt;%
+  mutate(period = case_when(year &lt;= 2005 ~ 1,
+                            year &gt; 2005 &amp; year &lt;= 2010 ~ 2,
+                            year &gt; 2010 ~ 3)) %&gt;%
+  select(ctry.iso3, ctry.name, year, period, everything()) </code></pre>
+<div class="tutorial-exercise-support" data-label="data_clean" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+data &lt;- data</code></pre>
+</div>
+</div>
+<div id="section-section-6" class="section level3">
+<h3></h3>
+<p>Lets see what the final data looks like</p>
+<div class="tutorial-exercise" data-label="data_inspect" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data %&gt;% head()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_clean","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-data-structure-pivoting" class="section level3">
+<h3>Data structure (pivoting)</h3>
+<ul>
+<li>We also see that the data has a <code>long</code> (also called <code>tidy</code>) format, meaning the variables to be found in the rows rather than the columns, where the variable name is to be found in the <code>indicator</code> column.</li>
+<li>This is a typical data structure you will often obtain from statistical offices, the OECD, the Worldbank and so forth.</li>
+<li>This is sometimes really convenient for plotting and providing summaries of many variables.</li>
+<li>For other tasks, however, we require a <code>wide</code> format, where the variables are to be found on the columns. We will use the <code>pivot_wider()</code> funcction to do so.</li>
+</ul>
+<pre class="r"><code>data_wide &lt;- data %&gt;%
+  pivot_wider(names_from = indicator, values_from = value)</code></pre>
+<div class="tutorial-exercise-support" data-label="data_wide" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+data_wide &lt;- data_wide</code></pre>
+</div>
+<p>Lets take a look what that looks like now</p>
+<div class="tutorial-exercise" data-label="data_wide_inspect" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide %&gt;% head()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-first-visual-inspection" class="section level2">
+<h2>First visual inspection</h2>
+<ul>
+<li>Now it is time for some first visualization. We will explore:
+<ul>
+<li>The correlation between different indicators</li>
+<li>The conditional distribution between indicators</li>
+</ul></li>
+<li>We will soon do some own ones with the <code>ggplot2</code> package.</li>
+<li>Here for now use the <code>GGally</code> packages, which builds on <code>ggplot2</code> and offers some nice standard exploratory visualizations.</li>
+</ul>
+<div id="section-correlation-distribution-structure" class="section level3">
+<h3>Correlation &amp; Distribution structure</h3>
+<p>First, lets look at the correlation matrix.</p>
+<div class="tutorial-exercise" data-label="plot_corr" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide %&gt;% 
+  select(-ctry.iso3, -ctry.name, -year, -period) %&gt;%
+  ggcorr(label = TRUE, label_size = 3, label_round = 2, label_alpha = TRUE)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-section-7" class="section level3">
+<h3></h3>
+<p>In adittion, I like the comprehensive <code>ggpairs</code> function, which produces a combination of correlation and scatterplot matrix, plus</p>
+<div class="tutorial-exercise" data-label="plot_dist" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide %&gt;% 
+  select(-ctry.iso3, -ctry.name, -year, -period) %&gt;%
+  ggpairs(aes(alpha = 0.3), 
+          ggtheme = theme_gray())</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-static-rankings" class="section level2">
+<h2>Static rankings</h2>
+<ul>
+<li>After getting an overview on the general indicator behavior, lets see how the different countries do.</li>
+<li>The most simple thing is just to see a barplot stile ranking of countries.</li>
+<li>We start with getting an overall overview over the whole time.</li>
+</ul>
+<div id="section-section-8" class="section level3">
+<h3></h3>
+<ul>
+<li>We use the <code>group_by()</code> and <code>summarize()</code> to aggregate the variables by their mean on country level:</li>
+</ul>
+<pre class="r"><code>data_wide_agg &lt;- data_wide %&gt;%
+  select(-year, -period) %&gt;%
+  filter( !(ctry.iso3 %in% c(&quot;OECD&quot;, &quot;EU28&quot;))) %&gt;%
+  group_by(ctry.iso3, ctry.name) %&gt;% 
+  summarize_all(mean, na.rm = TRUE) %&gt;% 
+  ungroup() </code></pre>
+<div class="tutorial-exercise-support" data-label="data_wide_agg" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+data_wide_agg &lt;- data_wide_agg</code></pre>
+</div>
+<p>Lets see what we got…</p>
+<div class="tutorial-exercise" data-label="head_wide_agg" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide_agg %&gt;% head()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide_agg","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-gpd-growth" class="section level3">
+<h3>GPD growth</h3>
+<ul>
+<li>First, lets take a look at a classical economic indicator, GDP growth.</li>
+<li>Notice the <code>reorder</code> function, since otherwise countries would be ordered by name.</li>
+</ul>
+<div class="tutorial-exercise" data-label="plot_gdp_bar" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide_agg %&gt;%
+  arrange(desc(GDP_GRO)) %&gt;%
+  slice(1:20) %&gt;%
+  ggplot(aes(x = reorder(ctry.iso3, GDP_GRO), y = GDP_GRO)) +
+  geom_bar(stat=&quot;identity&quot;) +
+  coord_flip() </code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide_agg","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-gross-domestic-expenditure-on-rd-gerd" class="section level3">
+<h3>Gross domestic expenditure on R&amp;D (GERD)</h3>
+<ul>
+<li>Next, lets look at some input, such as GERD.</li>
+</ul>
+<div class="tutorial-exercise" data-label="plot_rd_bar" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide_agg %&gt;%
+  arrange(desc(G_XGDP)) %&gt;%
+  slice(1:20) %&gt;%
+  ggplot(aes(x = reorder(ctry.iso3, G_XGDP), y = G_XGDP)) +
+  geom_bar(stat=&quot;identity&quot;) +
+  coord_flip()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide_agg","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-patent-output" class="section level3">
+<h3>Patent Output</h3>
+<ul>
+<li>Finally, also look at an output, such as triadic (USTPO+EPO+JPO joint applications) patents.</li>
+</ul>
+<div class="tutorial-exercise" data-label="plot_patent_bar" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide_agg %&gt;%
+  arrange(desc(PTRIAD_GDP)) %&gt;%
+  slice(1:20) %&gt;%
+  ggplot(aes(x = reorder(ctry.iso3, PTRIAD_GDP), y = PTRIAD_GDP)) +
+  geom_bar(stat=&quot;identity&quot;) +
+  coord_flip()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide_agg","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-comparisons-between-countries-and-relationships-between-indicators" class="section level2">
+<h2>Comparisons between countries, and relationships between indicators</h2>
+<ul>
+<li>Next, it is often helpful to see how two indicators tend to develop together, and how countries scopre on them jointly. It for example makes sense to investigate to which extend some inputs (eg. GERD) translate into outputs (eg. patent applications).</li>
+<li>I also plot a regression line with <code>geom_smooth(method = "lm")</code></li>
+<li>The interactive hover effect I get with using the <code>ggplotly()</code></li>
+</ul>
+<div id="section-patents-gdp" class="section level3">
+<h3>Patents &amp; GDP</h3>
+<pre class="r"><code>p_pat &lt;- data_wide_agg %&gt;%
+  ggplot(aes(x =  G_XGDP, y = PTRIAD_GDP, size = GDP_PPPK, colour = GDP_GRO)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = &quot;black&quot;) + 
+  geom_smooth(method = &quot;lm&quot;, se = FALSE, linetype = &quot;dashed&quot;, alpha = 0.75) +
+  theme(legend.position = &quot;bottom&quot;) +
+  labs(x = &quot;GERD as % of GDP&quot;, 
+       y = &quot;Triadic Patents per mil. GDP&quot;) </code></pre>
+<div class="tutorial-exercise-support" data-label="p_pat" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_pat &lt;- p_pat</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plotly_patents" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_pat # %&gt;% plotly::ggplotly()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_pat","exercise.checker":"NULL"}</script>
+</div>
+<p>There indeed seems to be a relationship. Yet, some countries appear to translate their inputs more efficiently into output.</p>
+</div>
+<div id="section-gerd-patent-output" class="section level3">
+<h3>GERD &amp; Patent output</h3>
+<p>Lets take a look if goverment expenditure also translates into growth</p>
+<pre class="r"><code>p_g_p &lt;- data_wide_agg %&gt;%
+  ggplot(aes(x =  G_XGDP, y = GDP_GRO, size = GDP_PPPK)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = &quot;black&quot;) + 
+  geom_smooth(method = &quot;lm&quot;, se = FALSE, linetype = &quot;dashed&quot;, alpha = 0.75) +
+  theme(legend.position = &quot;bottom&quot;) +
+  labs(x = &quot;GERD as % of GDP&quot;, 
+       y = &quot;GDP growth %&quot;)</code></pre>
+<div class="tutorial-exercise-support" data-label="p_g_p" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_g_p &lt;- p_g_p</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plotly_gerd_patents" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_g_p # %&gt;% plotly::ggplotly()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_g_p","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-your-turn" class="section level3">
+<h3>Your turn</h3>
+<p>There seems to be none, or even a negative relationship.</p>
+<ul>
+<li>Take 10 minutes and discuss in groups.</li>
+<li>Inspect the data if you need. All datasets are oaded</li>
+</ul>
+<div class="tutorial-exercise-support" data-label="ex_setup1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data &lt;- data
+data_wide &lt;- data_wide
+data_wide_agg &lt;- data_wide_agg</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="ex1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># the datasets are: data, data_wide, data_wide_agg</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"ex_setup1","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-trends-and-dynamics" class="section level2">
+<h2>Trends and dynamics</h2>
+<ul>
+<li>Up to now, we only looked at average stats over the whole 2000-2016 period.</li>
+<li>Now, lets have a look what changed over time.</li>
+<li>To look at changes in all countries will probably be somewhat confusing visual, so we here only look at a selection.</li>
+</ul>
+<pre class="r"><code>ctry &lt;- c(&quot;DNK&quot;, &quot;DEU&quot;, &quot;CHN&quot;, &quot;JPN&quot;, &quot;KOR&quot;, &quot;GBR&quot;, &quot;USA&quot;)</code></pre>
+<div id="section-gerd-over-time" class="section level3">
+<h3>GERD over time</h3>
+<p>We again start with GERD.</p>
+<pre class="r"><code>p_t_gerd &lt;- data_wide %&gt;%
+  filter(year &lt;= 2014 &amp; ctry.iso3 %in% ctry) %&gt;%
+  ggplot(aes(x = year, y = G_XGDP, color = ctry.iso3)) +
+  geom_line(size = 1)</code></pre>
+<div class="tutorial-exercise-support" data-label="p_t_gerd" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_t_gerd &lt;- p_t_gerd</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plotly_gerd" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_t_gerd # %&gt;% plotly::ggplotly()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_t_gerd","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-set-of-indicators-jointly" class="section level3">
+<h3>Set of Indicators jointly</h3>
+<ul>
+<li>We can also look at a set of indicators jointly.</li>
+<li>Here, the data in long format becomes handy, since we can just do a <code>facet_wrap()</code>, which will generate an own plot for every indicator.</li>
+<li>Since they all have different scales, we also set <code>scales = "free"</code></li>
+</ul>
+<pre class="r"><code>p_fac &lt;- data %&gt;%
+  filter(year &lt;= 2014 &amp; ctry.iso3 %in% ctry) %&gt;%
+  ggplot(aes(x = year, y = value, color = ctry.iso3)) +
+  geom_line(size = 1) + 
+  facet_wrap(~ indicator, scales = &quot;free&quot;) + 
+  theme(legend.position = &quot;bottom&quot;)</code></pre>
+<div class="tutorial-exercise-support" data-label="p_fac" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_fac &lt;- p_fac</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plotly_facett" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_fac # %&gt;% plotly::ggplotly()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_fac","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-catching-up-and-development" class="section level2">
+<h2>Catching up and development</h2>
+<ul>
+<li>Finally, lets have a look at the development of countries along that indicators.</li>
+<li>This can be done similar to <a href="https://www.sciencedirect.com/science/article/abs/pii/S0048733308001431">Fagerberg &amp; Srholec (2008). National innovation systems, capabilities and economic development. Research policy, 37(9), 1417-1435</a> by comparing the initial level and the changes of indicators over time in a matrix.</li>
+<li>We will first create a new dataset, where we summarize all indicators for every 5 year period. That will make the results a bit more robust to tempral outliers and missing values for certain years.</li>
+</ul>
+<pre class="r"><code>data_wide_p &lt;- data_wide %&gt;%
+  select(-ctry.name, -year) %&gt;%
+  filter( !(ctry.iso3 %in% c(&quot;OECD&quot;, &quot;EU28&quot;))) %&gt;%
+  group_by(ctry.iso3, period) %&gt;% 
+  summarize_all(mean, na.rm = TRUE) %&gt;% 
+  ungroup() %&gt;%
+  arrange(ctry.iso3, period)</code></pre>
+<div id="section-calculating-deltas" class="section level3">
+<h3>Calculating Deltas</h3>
+<ul>
+<li>Now, we generate the procentual differenence between the indicators in the first and last period, which we call <code>xxx_delta</code>.</li>
+<li>We only keep the obervations for period 1 then.</li>
+</ul>
+<pre class="r"><code>data_wide_p %&lt;&gt;%
+  group_by(ctry.iso3) %&gt;%
+  mutate(GDP_HAB_PPPK_delta =  (lead(GDP_HAB_PPPK, n = 2) - GDP_HAB_PPPK) / GDP_HAB_PPPK,
+         G_XGDP_delta =  (lead(G_XGDP, n = 2) - G_XGDP) / G_XGDP,
+         PTRIAD_GDP_delta = (lead(PTRIAD_GDP, n = 2) - PTRIAD_GDP) / PTRIAD_GDP) %&gt;%
+  ungroup() %&gt;%
+  filter(period == 1 &amp; !(ctry.iso3 %in% c(&quot;PRT&quot;, &quot;ITA&quot;, &quot;GRC&quot;, &quot;LUX&quot;))) </code></pre>
+<div class="tutorial-exercise-support" data-label="data_wide_p" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+data_wide_p &lt;- data_wide_p</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="hed_wide_p" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>data_wide_p %&gt;% head()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide_p","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-section-9" class="section level3">
+<h3></h3>
+<p>And now we can plot the initial value of the indicator against its chang over time, which gives us a good idea of the countries development.</p>
+<pre class="r"><code>p_dev &lt;- data_wide_p %&gt;%
+  ggplot(aes(x =  GDP_HAB_PPPK, y = GDP_HAB_PPPK_delta, size = GDP_PPPK, color = G_XGDP_delta)) +
+  geom_point(alpha = 0.9) +
+  geom_text(aes(label = ctry.iso3), hjust = 0, vjust = 0, size = 4, color = &quot;black&quot;)</code></pre>
+<div class="tutorial-exercise-support" data-label="p_dev" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_dev &lt;- p_dev</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plot_dev" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_dev #  # %&gt;% plotly::ggplotly()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_dev","exercise.checker":"NULL"}</script>
+</div>
+<p>Well, not that bad, but for our final exercise, we can do nicer. We will take this plot and make it a bit clearer, with a couple of simple measures.</p>
+</div>
+<div id="section-section-10" class="section level3">
+<h3></h3>
+<ul>
+<li>Since the data has quite some outliers, we will plot it all on a log-scale (<code>scale_x_log10(), scale_y_log10()</code>)</li>
+<li>We add proper titel, andaxis descriptions to make the the plot understandable.</li>
+<li>We add horizontal and vertical lines at the median of the indicators.</li>
+<li>We name the resulting quadrants a la Fagerberg &amp; Srholec (2008).</li>
+</ul>
+<pre class="r"><code>p_dev_pretty &lt;- p_dev +
+  geom_hline(yintercept = median(data_wide_p$GDP_HAB_PPPK_delta, na.rm = TRUE), linetype = &quot;dashed&quot;) +
+  geom_vline(xintercept = median(data_wide_p$GDP_HAB_PPPK, na.rm = TRUE), linetype = &quot;dashed&quot;) +
+  annotate(&quot;text&quot;, x = 10000, y = 0.05, colour = &quot;red&quot;, size = 5, label = &quot;Falling behind&quot;) + 
+  annotate(&quot;text&quot;, x = 10000, y = 1.0, colour = &quot;red&quot;, size = 5, label = &quot;Catching up&quot;) + 
+  annotate(&quot;text&quot;, x = 45000, y = 0.05, colour = &quot;red&quot;, size = 5, label = &quot;Loosing momentum&quot;) + 
+  annotate(&quot;text&quot;, x = 45000, y = 1.0, colour = &quot;red&quot;, size = 5, label = &quot;Moving Ahead&quot;) +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  theme(legend.position = &quot;bottom&quot;) +
+  labs(title = &quot;Economic development since 2000&quot;,
+       subtitle = &quot;Inivial GDP vs. GDP growth&quot;,
+       x = &quot;log. Initial GDP \n av. 2000-2005 compared with 2010-2015, constant USD ppp&quot;, 
+       y = &quot;log. GDP Growth \n av. 2000-2005 compared with 2010-2015, constant USD ppp&quot;) </code></pre>
+<div class="tutorial-exercise-support" data-label="p_dev_pretty" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_dev_pretty &lt;- p_dev_pretty</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plot_dev_pretty" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_dev_pretty  # %&gt;% plotly::ggplotly()</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_dev_pretty","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-exercise" class="section level3">
+<h3>Exercise</h3>
+<p>Now reproduce what you learned:</p>
+<ul>
+<li>The last plot is very pretty and helpful for vidualizing economc development, but what about technological development?</li>
+<li>Could you reproduce the same plot for triadic patent applications?</li>
+</ul>
+<p>Do that in to steps: 1. Create the base plot 2. If you manage that, try to also make that pretty</p>
+<div class="tutorial-exercise" data-label="ex_final1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># use the data_wide_p object</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"data_wide_p","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-geo-spatial-visualization" class="section level2">
+<h2>Geo-spatial visualization</h2>
+<p>Lastly, lets do our first geo-spacial visualization, where we as an exercise plot a map with countries colored according to their BERD. Such map-visualizations often help understanding the geographical dimension of economic activity.</p>
+<pre class="r"><code>data_map &lt;- data_wide %&gt;% 
+  select(-ctry.iso3, -year) %&gt;%
+  group_by(ctry.name) %&gt;%
+  summarize_all(mean, na.rm = TRUE) %&gt;%
+  ungroup() </code></pre>
+<div id="section-section-11" class="section level3">
+<h3></h3>
+<ul>
+<li>First, we need a map. <code>ggplot</code>already provides with <code>map_data</code> a dataset with all the country coordinates. It can also produce country level maps in a similar way, but more on that later.</li>
+<li>We just amke two changes. We delete the Antarctica, since it takes a lot of space and is not that interesting in terms of economic activity. We also recode the country names of the USA and UK to full names. For whatever reasons they are abbreviated in <code>map_data</code>.</li>
+</ul>
+<pre class="r"><code>map_world &lt;- map_data(&quot;world&quot;) %&gt;% 
+  filter(region != &quot;Antarctica&quot;) %&gt;%
+  mutate(region = region %&gt;% recode(
+    USA = &quot;United States&quot;,
+    UK = &quot;United Kingdom&quot;))</code></pre>
+<pre class="r"><code>map_world %&gt;% head()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["long"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["lat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["group"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["order"],"name":[4],"type":["int"],"align":["right"]},{"label":["region"],"name":[5],"type":["chr"],"align":["left"]},{"label":["subregion"],"name":[6],"type":["chr"],"align":["left"]}],"data":[{"1":"-69.89912","2":"12.45200","3":"1","4":"1","5":"Aruba","6":"NA","_rn_":"1"},{"1":"-69.89571","2":"12.42300","3":"1","4":"2","5":"Aruba","6":"NA","_rn_":"2"},{"1":"-69.94219","2":"12.43853","3":"1","4":"3","5":"Aruba","6":"NA","_rn_":"3"},{"1":"-70.00415","2":"12.50049","3":"1","4":"4","5":"Aruba","6":"NA","_rn_":"4"},{"1":"-70.06612","2":"12.54697","3":"1","4":"5","5":"Aruba","6":"NA","_rn_":"5"},{"1":"-70.05088","2":"12.59707","3":"1","4":"6","5":"Aruba","6":"NA","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="section-section-12" class="section level3">
+<h3></h3>
+<ul>
+<li>We now just join it with our OECD STI indicators.</li>
+</ul>
+<pre class="r"><code>map_world %&lt;&gt;% 
+  left_join(data_map, by = c(&quot;region&quot; = &quot;ctry.name&quot; )  )</code></pre>
+<div class="tutorial-exercise-support" data-label="map_world" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+map_world &lt;- map_world</code></pre>
+</div>
+</div>
+<div id="section-section-13" class="section level3">
+<h3></h3>
+<p>And we can directly plot it. We therefore use the <code>geom_polygon()</code> layer. We also use a nicer color palett from the <code>viridis</code> package.</p>
+<pre class="r"><code>p_map &lt;-map_world %&gt;%
+  ggplot(aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = UNI500_HAB)) + 
+  viridis::scale_fill_viridis(option = &#39;plasma&#39;) + 
+  theme_bw()</code></pre>
+<div class="tutorial-exercise-support" data-label="p_map" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># For learnR evaluation
+p_map &lt;- p_map</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="plot_map" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_map </code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":6.5,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"p_map","exercise.checker":"NULL"}</script>
+</div>
+<p>Pretty, right?</p>
+</div>
+<div id="section-exercise-1" class="section level3">
+<h3>Exercise</h3>
+<p>Now, why dont you try it now whit another indicator you are interested in?</p>
+<div class="tutorial-exercise" data-label="ex_map" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># map_world is the object you want to start with</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":10,"fig.height":10,"fig.retina":2,"fig.align":"center","fig.keep":"high","fig.show":"asis","out.width":960,"warning":false,"error":true,"message":true,"exercise.df_print":"paged","exercise.setup":"map_world","exercise.checker":"NULL"}</script>
+</div>
+
+<script type="application/shiny-prerendered" data-context="server-start">
+
+### Generic preamble
+Sys.setenv(LANG = "en") # System language = english
+options(scipen = 5) # Disable scientific exponent annotation of numbers
+
+### Load packages  
+list.of.packages <- c("learnr", "pacman")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages); rm(list.of.packages, new.packages)
+
+# Page building and endering
+library(learnr)
+
+knitr::opts_chunk$set(error=TRUE, 
+                      warning=FALSE,
+                      fig.align='center')
+
+# Note: Maybe pacman needs to be installed
+pacman::p_load(OECD # OECD data interface
+               , tidyverse # Collection of all the good stuff like dplyr, ggplot2 ect.
+               , countrycode # for countrycode conversion
+               , magrittr # For extra-piping operators (eg. %<>%)
+               , GGally # ggplot visualization tools 
+               , viridis # pretty color palettes
+               , maps # for geoplotting
+               )
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+session$onSessionEnded(function() {
+        learnr:::session_stop_event(session)
+      })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-get_OECD-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-get_OECD-code-editor`)), session)
+output$`tutorial-exercise-get_OECD-output` <- renderUI({
+  `tutorial-exercise-get_OECD-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-data_raw_show-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-data_raw_show-code-editor`)), session)
+output$`tutorial-exercise-data_raw_show-output` <- renderUI({
+  `tutorial-exercise-data_raw_show-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-data_inspect-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-data_inspect-code-editor`)), session)
+output$`tutorial-exercise-data_inspect-output` <- renderUI({
+  `tutorial-exercise-data_inspect-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-data_wide_inspect-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-data_wide_inspect-code-editor`)), session)
+output$`tutorial-exercise-data_wide_inspect-output` <- renderUI({
+  `tutorial-exercise-data_wide_inspect-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_corr-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_corr-code-editor`)), session)
+output$`tutorial-exercise-plot_corr-output` <- renderUI({
+  `tutorial-exercise-plot_corr-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_dist-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_dist-code-editor`)), session)
+output$`tutorial-exercise-plot_dist-output` <- renderUI({
+  `tutorial-exercise-plot_dist-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-head_wide_agg-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-head_wide_agg-code-editor`)), session)
+output$`tutorial-exercise-head_wide_agg-output` <- renderUI({
+  `tutorial-exercise-head_wide_agg-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_gdp_bar-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_gdp_bar-code-editor`)), session)
+output$`tutorial-exercise-plot_gdp_bar-output` <- renderUI({
+  `tutorial-exercise-plot_gdp_bar-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_rd_bar-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_rd_bar-code-editor`)), session)
+output$`tutorial-exercise-plot_rd_bar-output` <- renderUI({
+  `tutorial-exercise-plot_rd_bar-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_patent_bar-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_patent_bar-code-editor`)), session)
+output$`tutorial-exercise-plot_patent_bar-output` <- renderUI({
+  `tutorial-exercise-plot_patent_bar-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plotly_patents-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plotly_patents-code-editor`)), session)
+output$`tutorial-exercise-plotly_patents-output` <- renderUI({
+  `tutorial-exercise-plotly_patents-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plotly_gerd_patents-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plotly_gerd_patents-code-editor`)), session)
+output$`tutorial-exercise-plotly_gerd_patents-output` <- renderUI({
+  `tutorial-exercise-plotly_gerd_patents-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-ex1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-ex1-code-editor`)), session)
+output$`tutorial-exercise-ex1-output` <- renderUI({
+  `tutorial-exercise-ex1-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plotly_gerd-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plotly_gerd-code-editor`)), session)
+output$`tutorial-exercise-plotly_gerd-output` <- renderUI({
+  `tutorial-exercise-plotly_gerd-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plotly_facett-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plotly_facett-code-editor`)), session)
+output$`tutorial-exercise-plotly_facett-output` <- renderUI({
+  `tutorial-exercise-plotly_facett-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-hed_wide_p-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-hed_wide_p-code-editor`)), session)
+output$`tutorial-exercise-hed_wide_p-output` <- renderUI({
+  `tutorial-exercise-hed_wide_p-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_dev-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_dev-code-editor`)), session)
+output$`tutorial-exercise-plot_dev-output` <- renderUI({
+  `tutorial-exercise-plot_dev-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_dev_pretty-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_dev_pretty-code-editor`)), session)
+output$`tutorial-exercise-plot_dev_pretty-output` <- renderUI({
+  `tutorial-exercise-plot_dev_pretty-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-ex_final1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-ex_final1-code-editor`)), session)
+output$`tutorial-exercise-ex_final1-output` <- renderUI({
+  `tutorial-exercise-ex_final1-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-plot_map-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-plot_map-code-editor`)), session)
+output$`tutorial-exercise-plot_map-output` <- renderUI({
+  `tutorial-exercise-plot_map-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-ex_map-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-ex_map-code-editor`)), session)
+output$`tutorial-exercise-ex_map-output` <- renderUI({
+  `tutorial-exercise-ex_map-result`()
+})
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["header-attrs"]},{"type":"character","attributes":{},"value":["2.7"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pandoc"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["header-attrs.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"character","attributes":{},"value":["<style>h1 {font-size: 34px;}\n       h1.title {font-size: 38px;}\n       h2 {font-size: 30px;}\n       h3 {font-size: 24px;}\n       h4 {font-size: 18px;}\n       h5 {font-size: 16px;}\n       h6 {font-size: 12px;}\n       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}\n       pre:not([class]) { background-color: white }<\/style>"]},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.7"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96]}},"value":[{"type":"character","attributes":{},"value":["DBI","GGally","OECD","R6","RColorBrewer","Rcpp","XML","assertthat","backports","base","broom","bslib","cellranger","cli","colorspace","compiler","countrycode","crayon","curl","datasets","dbplyr","debugme","digest","dplyr","ellipsis","evaluate","fansi","farver","fastmap","forcats","fs","generics","ggplot2","glue","grDevices","graphics","grid","gridExtra","gtable","haven","hms","htmltools","htmlwidgets","httpuv","httr","jquerylib","jsonlite","knitr","later","learnr","lifecycle","lubridate","magrittr","maps","markdown","methods","mime","modelr","munsell","pacman","pillar","pkgconfig","plyr","promises","purrr","readr","readxl","reprex","reshape","rlang","rmarkdown","rprojroot","rsdmx","rstudioapi","rvest","sass","scales","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","tidyverse","tools","utf8","utils","vctrs","viridis","viridisLite","withr","xfun","xml2","xtable","yaml"]},{"type":"character","attributes":{},"value":["1.1.1","2.1.1","0.2.4","2.5.0","1.1-2","1.0.6","3.99-0.5","0.2.1","1.2.1","4.0.3","0.7.5","0.2.4","1.1.0","2.3.1","2.0-0","4.0.3","1.2.0","1.4.1","4.3","4.0.3","2.1.0","1.1.0","0.6.27","1.0.5","0.3.1","0.14","0.4.2","2.1.0","1.1.0","0.5.1","1.5.0","0.1.0","3.3.3","1.4.2","4.0.3","4.0.3","4.0.3","2.3","0.3.0","2.3.1","1.0.0","0.5.1.1","1.5.3","1.5.5","1.4.2","0.1.3","1.7.2","1.31","1.1.0.1","0.10.1","1.0.0","1.7.10","2.0.1","3.3.0","1.1","4.0.3","0.10","0.1.8","0.5.0","0.5.1","1.5.1","2.0.3","1.8.6","1.2.0.1","0.3.4","1.4.0","1.3.1","1.0.0","0.8.8","0.4.10","2.7","2.0.2","0.6","0.13","0.3.6","0.3.1","1.1.1","1.6.0","4.0.3","1.5.3","1.4.0","3.1.0","1.1.3","1.1.0","1.3.0","4.0.3","1.1.4","4.0.3","0.3.6","0.5.1","0.3.0","2.4.1","0.21","1.3.2","1.8-4","2.2.1"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+</div>
+
+</div> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h2 class="title toc-ignore" style="display:none;">Evaluating Innovation System Performance – From simple to complex indicators</h2>
+<h4 class="author"><em>Daniel S. Hain (<a href="mailto:dsh@business.aau.dk" class="email">dsh@business.aau.dk</a>)</em></h4>
+<h4 class="date"><em>14 April, 2021</em></h4>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</div> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+
+</body>
+
+</html>
