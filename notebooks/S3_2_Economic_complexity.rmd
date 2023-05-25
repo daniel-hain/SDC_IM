@@ -240,7 +240,7 @@ mat_reg_tech %<>% select(-city) %>%
   as.matrix() %>%
   round()
 
-rownames(mat_reg_tech) <- rn_save
+rownames(mat_reg_tech) <- rn_save; rm(rn_save)
 ```
 
 Lets take a look:
@@ -353,12 +353,6 @@ So, what differences do we see?
 
 ### More info
 You can find more info about:
-
-#### Further readings
-
-* [`Introduction to Network Analysis in R I`](https://raw.githack.com/SDS-AAU/M2-2019/master/notebooks/M2_1_network_analysis_intro.html)
-* [`Introduction to Network Analysis in R II`](https://raw.githack.com/SDS-AAU/M2-2019/master/notebooks/M2_2_network_analysis_directed.html)
-* [`Introduction to Network Analysis in R III`](https://raw.githack.com/SDS-AAU/M2-2019/master/notebooks/M2_3_network_analysis_advanced.html)
 
 #### Data
 * [`Economic Complexity Data`](https://atlas.cid.harvard.edu/)
